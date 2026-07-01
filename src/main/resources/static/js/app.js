@@ -231,6 +231,44 @@ function submitText(){
   sendChat({ message: v });
 }
 
+/* ---------- 마이크 진단 ---------- */
+async function runMicDiagnostics(){
+  addMsg("bot","🔧 마이크 진단을 시작합니다…");
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  addMsg("bot","· 브라우저 음성인식 지원: " + (SR ? "O" : "X (크롬/엣지 권장)"));
+  addMsg("bot","· 보안 컨텍스트(HTTPS/localhost): " + (window.isSecureContext ? "O" : "X → 마이크 차단됨"));
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    addMsg("bot","· getUserMedia 미지원 — 브라우저 또는 보안 컨텍스트 문제입니다."); return;
+  }
+  try{
+    if(navigator.permissions){
+      const st = await navigator.permissions.query({ name: "microphone" });
+      addMsg("bot","· 크롬 마이크 권한 상태: " + st.state + " (granted=허용 / denied=거부 / prompt=물어봄)");
+    }
+  }catch(e){ addMsg("bot","· 권한 상태 조회 불가: " + e.message); }
+
+  try{
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const mics = devs.filter(d => d.kind === "audioinput");
+    addMsg("bot","· 브라우저가 본 마이크 개수: " + mics.length);
+    mics.forEach((m,i)=> addMsg("bot","   ["+(i+1)+"] " + (m.label || "(이름 숨김 — 권한 허용 전)")));
+    if(mics.length === 0)
+      addMsg("bot","→ 크롬이 마이크를 하나도 못 봅니다. Windows '마이크 접근'이 크롬에 막혀 있을 가능성이 큽니다.");
+  }catch(e){ addMsg("bot","· 장치 목록 조회 실패: " + e.message); }
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    addMsg("bot","✅ 마이크 캡처 성공! 장치·권한 모두 정상입니다. 이제 🎤가 됩니다.");
+    stream.getTracks().forEach(t => t.stop());
+  }catch(e){
+    addMsg("bot","❌ 마이크 캡처 실패: " + e.name + " — " + e.message);
+    if(e.name==="NotAllowedError")  addMsg("bot","→ 권한 거부. 주소창 왼쪽 아이콘 → 마이크 '허용' 후 새로고침.");
+    if(e.name==="NotFoundError")    addMsg("bot","→ 장치 없음. Windows 설정 › 시스템 › 소리 › 입력 에서 마이크 확인.");
+    if(e.name==="NotReadableError") addMsg("bot","→ 다른 앱(줌·팀즈 등)이 마이크를 잡고 있을 수 있어요. 종료 후 재시도.");
+  }
+}
+
 /* ---------- 유틸 ---------- */
 function colorHex(ko){
   const k=(ko||"").toLowerCase();
@@ -248,6 +286,7 @@ function scrollDown(){ const c=$("#chat"); c.scrollTop=c.scrollHeight; }
 window.addEventListener("DOMContentLoaded", () => {
   buildFlags(); applyUiText(); renderCart();
   $("#bigBtn").onclick = toggleBig;
+  const dg=$("#diagBtn"); if(dg) dg.onclick = runMicDiagnostics;
   $("#mic").onclick = micToggle;
   $("#send").onclick = submitText;
   $("#cam").onclick = () => $("#photo").click();
