@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>누구나 키오스크 도우미</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1 class="title" id="title">누구나 키오스크 도우미</h1>
+      <p class="subtitle" id="subtitle">사진·말·버튼으로 누구나 쉽게</p>
+      <div class="row">
+        <div class="flags" id="flags" role="group" aria-label="언어 선택"><!-- 국기 탭 (JS) --></div>
+        <button class="bigbtn" id="bigBtn" aria-pressed="false">🔎 큰 글씨·큰 소리</button>
+      </div>
+    </header>
+
+    <!-- 대화: 스크린리더가 새 안내를 읽도록 live region -->
+    <main class="chat" id="chat" role="log" aria-live="polite" aria-atomic="false"
+          aria-label="대화 내용"><!-- 메시지/선택지/가이드 --></main>
+
+    <!-- 장바구니 (담은 게 있을 때만 표시) -->
+    <section class="cartbar hidden" id="cartbar" aria-live="polite" aria-label="주문 내역">
+      <div class="cart-head"><span id="cartTitle">주문 내역</span>
+        <span class="cart-total" id="cartTotal"></span></div>
+      <ul class="cart-list" id="cartList"></ul>
+    </section>
+
+    <footer class="bar">
+      <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
+      <input id="text" type="text" placeholder="여기에 입력하세요" autocomplete="off" aria-label="메시지 입력">
+      <button class="iconbtn mic" id="mic" aria-label="말하기">🎤</button>
+      <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
+      <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
+    </footer>
+  </div>
+
+  <script th:src="@{/js/i18n.js}" src="/js/i18n.js"></script>
+  <script th:src="@{/js/app.js}" src="/js/app.js"></script>
+</body>
+</html>

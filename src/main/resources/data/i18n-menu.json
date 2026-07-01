@@ -1,0 +1,20 @@
+{
+  "아메리카노":            { "EN": "Americano", "VI": "Cà phê Americano", "ZH": "美式咖啡", "JA": "アメリカーノ" },
+  "카페라떼":              { "EN": "Caffè Latte", "VI": "Cà phê Latte", "ZH": "拿铁", "JA": "カフェラテ" },
+  "바닐라라떼":            { "EN": "Vanilla Latte", "VI": "Vanilla Latte", "ZH": "香草拿铁", "JA": "バニララテ" },
+  "디카페인 아메리카노":   { "EN": "Decaf Americano", "VI": "Americano khử caffein", "ZH": "低因美式咖啡", "JA": "デカフェアメリカーノ" },
+  "자몽에이드":            { "EN": "Grapefruit Ade", "VI": "Nước bưởi ép có ga", "ZH": "西柚气泡饮", "JA": "グレープフルーツエード" },
+  "핫초코":                { "EN": "Hot Chocolate", "VI": "Sô cô la nóng", "ZH": "热巧克力", "JA": "ホットチョコ" },
+  "뜨겁게(HOT)":           { "EN": "Hot", "VI": "Nóng", "ZH": "热饮", "JA": "ホット" },
+  "차갑게(ICE)":           { "EN": "Iced", "VI": "Đá", "ZH": "冰饮", "JA": "アイス" },
+  "결제하기":              { "EN": "Pay", "VI": "Thanh toán", "ZH": "付款", "JA": "支払う" },
+  "더 담기":               { "EN": "Add more", "VI": "Thêm món", "ZH": "继续添加", "JA": "追加する" },
+  "진료 접수":             { "EN": "Check-in", "VI": "Đăng ký khám", "ZH": "挂号", "JA": "受付" },
+  "진료비 수납":           { "EN": "Pay medical bill", "VI": "Thanh toán viện phí", "ZH": "缴费", "JA": "会計" },
+  "증명서 발급":           { "EN": "Issue certificate", "VI": "Cấp giấy chứng nhận", "ZH": "开具证明", "JA": "証明書発行" },
+  "확인":                  { "EN": "Confirm", "VI": "Xác nhận", "ZH": "确认", "JA": "確認" },
+  "주민등록등본":          { "EN": "Resident registration copy", "VI": "Bản sao đăng ký cư trú", "ZH": "居民登记誊本", "JA": "住民票の写し" },
+  "가족관계증명서":        { "EN": "Family relation certificate", "VI": "Giấy chứng nhận quan hệ gia đình", "ZH": "家庭关系证明书", "JA": "家族関係証明書" },
+  "인감증명서":            { "EN": "Seal certificate", "VI": "Giấy chứng nhận con dấu", "ZH": "印章证明书", "JA": "印鑑証明書" },
+  "지문 인증":             { "EN": "Fingerprint authentication", "VI": "Xác thực vân tay", "ZH": "指纹认证", "JA": "指紋認証" }
+}

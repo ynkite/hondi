@@ -1,0 +1,115 @@
+{
+  "kiosks": [
+    {
+      "brandId": "cafe-jingdari",
+      "brandName": "징검다리 카페 (데모)",
+      "placeType": "ORDER",
+      "startScreenId": "home",
+      "screens": [
+        {
+          "screenId": "home",
+          "title": "무엇을 주문하시겠어요?",
+          "items": [
+            { "id": "americano",  "nameKo": "아메리카노",   "price": 3000, "category": "커피", "tags": ["coffee","bitter","hot","cold"], "buttonColor": "파랑",  "buttonPosition": "맨 위 첫 번째" },
+            { "id": "latte",      "nameKo": "카페라떼",     "price": 4000, "category": "커피", "tags": ["coffee","mild","hot","cold","milk"], "buttonColor": "파랑",  "buttonPosition": "맨 위 두 번째" },
+            { "id": "vanilla",    "nameKo": "바닐라라떼",   "price": 4500, "category": "커피", "tags": ["coffee","sweet","hot","cold","milk"], "buttonColor": "파랑",  "buttonPosition": "왼쪽 아래" },
+            { "id": "americano_de","nameKo": "디카페인 아메리카노", "price": 3500, "category": "커피", "tags": ["coffee","bitter","decaf","hot","cold"], "buttonColor": "파랑", "buttonPosition": "오른쪽 위" },
+            { "id": "ade",        "nameKo": "자몽에이드",   "price": 4500, "category": "음료", "tags": ["sweet","cold","fruit","nocoffee"], "buttonColor": "초록", "buttonPosition": "오른쪽 아래" },
+            { "id": "choco",      "nameKo": "핫초코",       "price": 4000, "category": "음료", "tags": ["sweet","hot","nocoffee"], "buttonColor": "초록", "buttonPosition": "가운데" }
+          ],
+          "guides": [],
+          "nextScreen": {
+            "americano": "temp", "latte": "temp", "vanilla": "temp",
+            "americano_de": "temp", "ade": "temp", "choco": "temp"
+          }
+        },
+        {
+          "screenId": "temp",
+          "title": "뜨겁게 / 차갑게 골라주세요",
+          "items": [
+            { "id": "hot", "nameKo": "뜨겁게(HOT)", "price": null, "category": "온도", "tags": ["hot"], "buttonColor": "빨강", "buttonPosition": "왼쪽" },
+            { "id": "ice", "nameKo": "차갑게(ICE)", "price": null, "category": "온도", "tags": ["cold"], "buttonColor": "파랑", "buttonPosition": "오른쪽" }
+          ],
+          "guides": [],
+          "nextScreen": { "hot": "cart", "ice": "cart" }
+        },
+        {
+          "screenId": "cart",
+          "title": "더 담거나 결제하세요",
+          "items": [
+            { "id": "pay", "nameKo": "결제하기", "price": null, "category": "결제", "tags": ["pay"], "buttonColor": "초록", "buttonPosition": "맨 아래 큰 버튼" },
+            { "id": "more", "nameKo": "더 담기", "price": null, "category": "주문", "tags": ["add"], "buttonColor": "회색", "buttonPosition": "왼쪽 아래" }
+          ],
+          "guides": [
+            { "step": 1, "instructionKo": "더 시키려면 회색 '더 담기', 끝내려면 초록색 '결제하기'를 누르세요.", "color": "초록", "position": "맨 아래", "targetItemId": "pay" }
+          ],
+          "nextScreen": { "pay": "done", "more": "home" }
+        },
+        { "screenId": "done", "title": "주문 완료", "items": [], "guides": [], "nextScreen": {} }
+      ]
+    },
+    {
+      "brandId": "hospital-univ",
+      "brandName": "OO대학병원 접수 키오스크 (데모)",
+      "placeType": "TICKET",
+      "startScreenId": "home",
+      "screens": [
+        {
+          "screenId": "home",
+          "title": "무엇을 도와드릴까요?",
+          "items": [
+            { "id": "reception", "nameKo": "진료 접수",  "price": null, "category": "접수", "tags": ["reception"], "buttonColor": "파랑", "buttonPosition": "왼쪽 위" },
+            { "id": "payment",   "nameKo": "진료비 수납","price": null, "category": "수납", "tags": ["payment"], "buttonColor": "주황", "buttonPosition": "오른쪽 위" },
+            { "id": "certificate","nameKo": "증명서 발급","price": null, "category": "증명서","tags": ["document"], "buttonColor": "초록", "buttonPosition": "아래" }
+          ],
+          "guides": [],
+          "nextScreen": { "reception": "id-check" }
+        },
+        {
+          "screenId": "id-check",
+          "title": "주민등록번호 또는 휴대폰 번호를 입력하세요",
+          "items": [
+            { "id": "confirm", "nameKo": "확인", "price": null, "category": "확인", "tags": ["confirm"], "buttonColor": "파랑", "buttonPosition": "맨 아래" }
+          ],
+          "guides": [
+            { "step": 1, "instructionKo": "화면 숫자판으로 생년월일 6자리를 누르세요.", "color": null, "position": "가운데 숫자판", "targetItemId": null },
+            { "step": 2, "instructionKo": "파란색 '확인' 버튼을 누르세요.", "color": "파랑", "position": "맨 아래", "targetItemId": "confirm" }
+          ],
+          "nextScreen": { "confirm": "done" }
+        },
+        { "screenId": "done", "title": "접수 완료 — 번호표를 받으세요", "items": [], "guides": [], "nextScreen": {} }
+      ]
+    },
+    {
+      "brandId": "gov-dong",
+      "brandName": "OO동 주민센터 무인민원 (데모)",
+      "placeType": "CIVIL",
+      "startScreenId": "home",
+      "screens": [
+        {
+          "screenId": "home",
+          "title": "어떤 서류가 필요하세요?",
+          "items": [
+            { "id": "resident", "nameKo": "주민등록등본",     "price": 400, "category": "민원서류", "tags": ["resident"], "buttonColor": "파랑", "buttonPosition": "맨 위 첫 번째" },
+            { "id": "family",   "nameKo": "가족관계증명서",   "price": 1000, "category": "민원서류", "tags": ["family"], "buttonColor": "파랑", "buttonPosition": "맨 위 두 번째" },
+            { "id": "seal",     "nameKo": "인감증명서",       "price": 600, "category": "민원서류", "tags": ["seal"], "buttonColor": "파랑", "buttonPosition": "아래" }
+          ],
+          "guides": [],
+          "nextScreen": { "resident": "auth", "family": "auth", "seal": "auth" }
+        },
+        {
+          "screenId": "auth",
+          "title": "본인 확인 (지문 또는 비밀번호)",
+          "items": [
+            { "id": "fingerprint", "nameKo": "지문 인증", "price": null, "category": "인증", "tags": ["auth"], "buttonColor": "초록", "buttonPosition": "가운데" }
+          ],
+          "guides": [
+            { "step": 1, "instructionKo": "초록색 지문 인식기에 손가락을 올려주세요.", "color": "초록", "position": "가운데", "targetItemId": "fingerprint" }
+          ],
+          "nextScreen": { "fingerprint": "done" }
+        },
+        { "screenId": "done", "title": "발급 완료 — 서류를 받으세요", "items": [], "guides": [], "nextScreen": {} }
+      ]
+    }
+  ]
+}

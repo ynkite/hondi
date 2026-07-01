@@ -23,21 +23,34 @@ ext {
 }
 
 dependencies {
+    // --- 화면/웹 (Spring Boot 4 모듈식 스타터) ---
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // --- JSON(Jackson) ---
+    // Boot 4는 모듈화되어 webmvc 스타터가 Jackson을 자동으로 안 가져온다.
+    // @RequestBody/@ResponseBody(JSON)와 ObjectMapper/JsonNode 사용에 필수이므로 명시적으로 추가.
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'   // 버전은 Boot BOM이 관리
+
+    // --- AI: 지금은 Ollama(로컬)만 활성 ---
     implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-mariadb'
-    implementation 'org.springframework.ai:spring-ai-vector-store-advisor'
+
+    // --- [추후] OpenAI / Claude 비교 테스트 후 더 잘하는 쪽 연결 ---
+    // implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    // implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'   // Claude
+
+    // --- [추후] RAG용 MariaDB 벡터 스토어. DB 세팅 후 주석 해제 ---
+    // implementation 'org.springframework.ai:spring-ai-starter-vector-store-mariadb'
+    // implementation 'org.springframework.ai:spring-ai-vector-store-advisor'
+    // runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 dependencyManagement {
@@ -48,4 +61,9 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// JSON ↔ record 바인딩이 파라미터 이름에 의존하므로 -parameters 보장
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add('-parameters')
 }

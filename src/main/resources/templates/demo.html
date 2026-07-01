@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>데모 키오스크</title>
+  <style>
+    body{margin:0;font-family:system-ui,"Malgun Gothic",sans-serif;background:#0f1420;color:#fff;
+      display:flex;justify-content:center;min-height:100vh}
+    .kiosk{width:100%;max-width:520px;background:#141b2b;border-left:4px solid #2f6df6;border-right:4px solid #2f6df6;
+      display:flex;flex-direction:column}
+    .head{padding:22px 18px;background:#1d273b;font-size:1.4em;font-weight:800;text-align:center}
+    .brand{font-size:.6em;color:#9fb0d0;font-weight:600;margin-bottom:6px}
+    .items{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+    .kbtn{border:none;border-radius:16px;padding:26px 14px;font-size:1.15em;font-weight:800;cursor:pointer;color:#fff;
+      min-height:120px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+    .kbtn small{font-weight:600;opacity:.9}
+    .blue{background:#2f6df6}.red{background:#e23b3b}.green{background:#1ea463}.orange{background:#f08a24}.gray{background:#6b7280}
+    .done{padding:60px 20px;text-align:center;font-size:1.6em;font-weight:800}
+    .foot{padding:12px;text-align:center;color:#7d8aa5;font-size:.8em}
+    a{color:#7fa7ff}
+  </style>
+</head>
+<body th:attr="data-brand=${brandId}">
+  <div class="kiosk">
+    <div class="head"><div class="brand" id="brand"></div><span id="title">…</span></div>
+    <div class="items" id="items"></div>
+    <div class="foot">데모용 가짜 키오스크 · 화면 흐름은 우리가 정의 · <a href="/">도우미 앱 열기</a></div>
+  </div>
+  <script>
+    const brandId = document.body.getAttribute("data-brand");
+    const colorClass = (ko)=>{const k=(ko||"").toLowerCase();
+      if(k.includes("파"))return"blue"; if(k.includes("빨"))return"red";
+      if(k.includes("초")||k.includes("녹"))return"green"; if(k.includes("주"))return"orange";
+      if(k.includes("회"))return"gray"; return"blue";};
+    let kiosk=null;
+    async function load(){
+      const res=await fetch("/api/kiosks/"+brandId); kiosk=await res.json();
+      if(!kiosk){document.getElementById("title").textContent="키오스크를 찾을 수 없어요";return;}
+      document.getElementById("brand").textContent=kiosk.brandName;
+      show(kiosk.startScreenId);
+    }
+    function screenById(id){ return kiosk.screens.find(s=>s.screenId===id); }
+    function show(id){
+      const s=screenById(id); const items=document.getElementById("items");
+      document.getElementById("title").textContent=s.title;
+      items.innerHTML="";
+      if((!s.items||!s.items.length) && (!s.nextScreen||!Object.keys(s.nextScreen).length)){
+        items.innerHTML='<div class="done" style="grid-column:1/3">✅ '+s.title+'</div>'; return;
+      }
+      (s.items||[]).forEach(it=>{
+        const b=document.createElement("button");
+        b.className="kbtn "+colorClass(it.buttonColor);
+        b.innerHTML="<span>"+it.nameKo+"</span>"+
+          (it.price!=null?"<small>"+it.price.toLocaleString()+"원</small>":"")+
+          (it.buttonPosition?"<small>📍"+it.buttonPosition+"</small>":"");
+        b.onclick=()=>{ const next=s.nextScreen&&s.nextScreen[it.id]; if(next) show(next); };
+        items.appendChild(b);
+      });
+    }
+    load();
+  </script>
+</body>
+</html>

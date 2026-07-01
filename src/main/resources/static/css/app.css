@@ -1,0 +1,67 @@
+/* 기능 위주 기본 스타일. 최종 디자인은 추후 포토샵 시안으로 교체 예정. */
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --ink:#1b2330; --sub:#5a6577;
+  --accent:#2f6df6; --accent-ink:#fff; --line:#e3e8f0;
+  --blue:#2f6df6; --red:#e23b3b; --green:#1ea463; --orange:#f08a24; --gray:#9aa3b2;
+  --fs:17px; --tap:52px; --radius:16px;
+}
+body.big{ --fs:23px; --tap:68px; }
+*{box-sizing:border-box}
+body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:var(--fs);line-height:1.5}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+
+header.top{padding:14px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.title{font-weight:800;font-size:1.15em;margin:0}
+.subtitle{color:var(--sub);font-size:.8em;margin:2px 0 10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.flags{display:flex;gap:6px;flex-wrap:wrap}
+.flag{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;
+  font-size:1em;cursor:pointer;min-height:40px}
+.flag.active{border-color:var(--accent);background:#eaf1ff;font-weight:700}
+.bigbtn{margin-left:auto;border:2px solid var(--ink);background:#fff;border-radius:999px;
+  padding:8px 14px;font-weight:700;cursor:pointer;min-height:40px}
+.bigbtn.on{background:var(--ink);color:#fff}
+
+.chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;padding:12px 14px;border-radius:var(--radius);white-space:pre-wrap}
+.msg.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.me{background:var(--accent);color:var(--accent-ink);align-self:flex-end;border-bottom-right-radius:4px}
+.msg .ko{display:block;color:var(--sub);font-size:.8em;margin-top:2px}
+
+.options{display:flex;flex-direction:column;gap:10px;align-self:flex-start;width:88%}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;
+  min-height:var(--tap);cursor:pointer;text-align:left}
+.opt:hover{border-color:var(--accent)}
+.opt .name{font-weight:700}
+.opt .ko{color:var(--sub);font-size:.8em}
+.opt .price{color:var(--accent);font-weight:700;white-space:nowrap}
+.opt .pos{font-size:.78em;color:var(--sub)}
+
+.guide{align-self:flex-start;width:88%;display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;padding:12px}
+.dot{width:22px;height:22px;border-radius:50%;flex:0 0 auto;border:3px solid var(--ink)}
+.step .txt{font-weight:700}
+.swatch{width:26px;height:26px;border-radius:8px;flex:0 0 auto;border:2px solid #0002}
+
+footer.bar{padding:10px;background:var(--card);border-top:1px solid var(--line);
+  display:flex;gap:8px;align-items:center;position:sticky;bottom:0}
+.bar input{flex:1;border:2px solid var(--line);border-radius:999px;padding:12px 16px;font-size:1em;min-height:var(--tap)}
+.iconbtn{border:none;border-radius:50%;width:var(--tap);height:var(--tap);font-size:1.3em;cursor:pointer;flex:0 0 auto;color:#fff}
+.iconbtn.mic{background:var(--green)} .iconbtn.mic.rec{background:var(--red);animation:pulse 1s infinite}
+.iconbtn.cam{background:var(--accent)} .iconbtn.send{background:var(--ink)}
+@keyframes pulse{50%{opacity:.55}}
+.hidden{display:none}
+
+/* 장바구니 바 */
+.cartbar{background:#fff;border-top:1px solid var(--line);padding:10px 14px;max-height:34vh;overflow-y:auto}
+.cart-head{display:flex;justify-content:space-between;font-weight:800;margin-bottom:6px}
+.cart-total{color:var(--accent)}
+.cart-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cart-list li{display:flex;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.cart-list .p{color:var(--sub);white-space:nowrap}
+
+/* 포커스 가시화(키보드/스크린리더) */
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
