@@ -25,10 +25,7 @@
             <span class="tag">제주 키오스크 도우미</span>
           </span>
         </button>
-        <div class="auth">
-          <button class="ghostbtn" id="loginBtn"></button>
-          <button class="ghostbtn" id="signupBtn"></button>
-        </div>
+        <div class="auth" id="authArea" role="group" aria-label="계정"></div>
       </div>
       <div class="toolrow">
         <div class="flags" id="flags" role="group" aria-label="언어 선택"></div>
@@ -179,6 +176,40 @@
           <p class="center-sub" id="reportDoneSub"></p>
           <button class="primary" data-go="home" id="toHomeBtn"></button>
         </div>
+      </section>
+
+      <!-- 10) 로그인 (선택 · 게스트-우선) -->
+      <section class="screen" id="scr-login" aria-label="로그인">
+        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+        <div class="login-wrap">
+          <span class="big-emoji" aria-hidden="true">🍊</span>
+          <h2 class="center-title" id="loginTitle"></h2>
+          <button class="kakao-btn" id="kakaoBtn" type="button">
+            <span class="kakao-ico" aria-hidden="true">💬</span>
+            <span id="kakaoLbl"></span>
+          </button>
+          <button class="link-alt" id="noKakaoBtn" type="button"></button>
+          <p class="guest-note" id="guestOk"></p>
+        </div>
+      </section>
+
+      <!-- 11) 간편 시작 (이름·전화번호만) -->
+      <section class="screen" id="scr-signup" aria-label="이름과 전화번호로 시작">
+        <div class="scrbar"><button class="linkbtn" data-back="login">‹ <span data-k="back"></span></button></div>
+        <form class="signup-wrap" id="signupForm" novalidate>
+          <h2 class="center-title" id="signupTitle"></h2>
+          <p class="center-sub" id="signupSub"></p>
+          <label class="field">
+            <span class="field-label" id="nameLabel"></span>
+            <input id="suName" type="text" autocomplete="name" enterkeyhint="next" autocapitalize="words">
+          </label>
+          <label class="field">
+            <span class="field-label" id="phoneLabel"></span>
+            <input id="suPhone" type="tel" inputmode="numeric" autocomplete="tel" enterkeyhint="done">
+          </label>
+          <p class="signup-err" id="suErr" role="alert" aria-live="assertive" hidden></p>
+          <button class="primary big-cta" id="suSubmit" type="submit"></button>
+        </form>
       </section>
 
     </main>

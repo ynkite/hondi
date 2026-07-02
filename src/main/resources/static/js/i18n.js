@@ -49,7 +49,8 @@ const I18N = {
         stepRecog: "메뉴·상호 인식", stepOrder: "주문서 자동 정리", stepStaff: "직원에게 보여주기",
         reportTitle: "사진으로 제보하기", reportHint: "메뉴판·간판·키오스크 사진을 올려주세요",
         reportBtn: "사진 올리기", reportDone: "제보되었습니다!", reportDoneSub: "덕분에 다음 사람이 더 쉽게 써요",
-        toHome: "홈으로", loginSoon: "로그인은 준비 중이에요", greetShort: "안녕하세요! 어느 키오스크를 도와드릴까요? 가게 이름을 말씀해 주세요 🙂", greetNote: "지금은 빽다방·맘스터치·맥도날드·메가커피를 도와드릴 수 있어요.", addMore: "더 담기", addMoreSub: "메뉴 더 고르기", finish: "완료하기", finishSub: "이대로 주문하기", alwaysListening: "상시로 듣고 있어요", micTap: "말하기", micStop: "듣기 멈춤", addedCart: "담았어요! 더 고르시겠어요?", directType: "직접 입력", payVoiceHint: "‘카드’·‘현금’이라고 말해도 돼요", orderEmpty: "아직 담은 주문이 없어요" },
+        toHome: "홈으로", loginSoon: "로그인은 준비 중이에요", greetShort: "안녕하세요! 어느 키오스크를 도와드릴까요? 가게 이름을 말씀해 주세요 🙂", greetNote: "지금은 빽다방·맘스터치·맥도날드·메가커피를 도와드릴 수 있어요.", addMore: "더 담기", addMoreSub: "메뉴 더 고르기", finish: "완료하기", finishSub: "이대로 주문하기", alwaysListening: "상시로 듣고 있어요", micTap: "말하기", micStop: "듣기 멈춤", addedCart: "담았어요! 더 고르시겠어요?", directType: "직접 입력", payVoiceHint: "‘카드’·‘현금’이라고 말해도 돼요", orderEmpty: "아직 담은 주문이 없어요",
+        kakaoStart: "카카오로 시작하기", loginTitle: "간편하게 시작해요", guestOk: "로그인 안 해도 모두 이용할 수 있어요", noKakao: "카카오가 없어요 · 이름·전화번호로 시작", signupTitle: "이름과 전화번호만 알려주세요", signupSub: "주문서를 직원에게 보여줄 때 쓰여요", nameLabel: "이름", phoneLabel: "전화번호", namePh: "예: 홍길동", phonePh: "예: 010-1234-5678", startBtn: "시작하기", logout: "로그아웃", hiSuffix: "님", loginOkMsg: "반가워요! 로그인됐어요", loginFailMsg: "로그인이 안 됐어요. 이름·전화번호로 시작해 보세요.", signupErr: "이름과 전화번호를 확인해 주세요", loggedOutMsg: "로그아웃했어요" },
 
   EN: { title: "Kiosk Helper for Everyone", subtitle: "Photo, voice or buttons — easy for anyone",
         bigMode: "Bigger text & sound", speak: "Speak", listening: "Listening…",
@@ -99,7 +100,8 @@ const I18N = {
         stepRecog: "Read menu & name", stepOrder: "Auto-organize order", stepStaff: "Show to staff",
         reportTitle: "Report with a photo", reportHint: "Upload a menu, sign or kiosk photo",
         reportBtn: "Upload photo", reportDone: "Reported!", reportDoneSub: "Thanks — the next person will have it easier",
-        toHome: "Home", loginSoon: "Login is coming soon", greetShort: "Hi! Which kiosk can I help with? Please say the store name 🙂", greetNote: "For now I can help with Paik's, Mom's Touch, McDonald's and Mega Coffee.", addMore: "Add more", addMoreSub: "Pick another item", finish: "Done", finishSub: "Order like this", alwaysListening: "Always listening", micTap: "Speak", micStop: "Stop", addedCart: "Added! Anything else?", directType: "Type", payVoiceHint: "You can also say ‘card’ or ‘cash’", orderEmpty: "No order yet" },
+        toHome: "Home", loginSoon: "Login is coming soon", greetShort: "Hi! Which kiosk can I help with? Please say the store name 🙂", greetNote: "For now I can help with Paik's, Mom's Touch, McDonald's and Mega Coffee.", addMore: "Add more", addMoreSub: "Pick another item", finish: "Done", finishSub: "Order like this", alwaysListening: "Always listening", micTap: "Speak", micStop: "Stop", addedCart: "Added! Anything else?", directType: "Type", payVoiceHint: "You can also say ‘card’ or ‘cash’", orderEmpty: "No order yet",
+        kakaoStart: "Start with Kakao", loginTitle: "Start in one tap", guestOk: "You can use everything without logging in", noKakao: "No Kakao? Start with name & phone", signupTitle: "Just your name and phone", signupSub: "Used when showing your order to staff", nameLabel: "Name", phoneLabel: "Phone", namePh: "e.g. Jane Doe", phonePh: "e.g. 010-1234-5678", startBtn: "Start", logout: "Log out", hiSuffix: "", loginOkMsg: "Welcome! You're logged in", loginFailMsg: "Login didn't work. Try name & phone instead.", signupErr: "Please check your name and phone", loggedOutMsg: "Logged out" },
 
   VI: { title: "Trợ lý Kiosk cho mọi người", subtitle: "Ảnh, giọng nói hoặc nút bấm — dễ cho ai cũng dùng",
         bigMode: "Chữ to & âm to", speak: "Nói", listening: "Đang nghe…",
@@ -149,7 +151,8 @@ const I18N = {
         stepRecog: "Đọc thực đơn & tên", stepOrder: "Tự sắp xếp đơn", stepStaff: "Cho nhân viên xem",
         reportTitle: "Báo tin bằng ảnh", reportHint: "Tải ảnh thực đơn, biển hoặc kiosk",
         reportBtn: "Tải ảnh lên", reportDone: "Đã báo tin!", reportDoneSub: "Cảm ơn — người sau sẽ dễ hơn",
-        toHome: "Trang chính", loginSoon: "Đăng nhập sắp có", greetShort: "Xin chào! Tôi giúp kiosk nào? Hãy nói tên cửa hàng 🙂", greetNote: "Hiện có thể giúp: Paik's, Mom's Touch, McDonald's, Mega Coffee.", addMore: "Thêm món", addMoreSub: "Chọn món khác", finish: "Xong", finishSub: "Đặt như vậy", alwaysListening: "Luôn lắng nghe", micTap: "Nói", micStop: "Dừng", addedCart: "Đã thêm! Bạn muốn gì nữa không?", directType: "Nhập", payVoiceHint: "Bạn cũng có thể nói ‘thẻ’ hoặc ‘tiền mặt’", orderEmpty: "Chưa có đơn" },
+        toHome: "Trang chính", loginSoon: "Đăng nhập sắp có", greetShort: "Xin chào! Tôi giúp kiosk nào? Hãy nói tên cửa hàng 🙂", greetNote: "Hiện có thể giúp: Paik's, Mom's Touch, McDonald's, Mega Coffee.", addMore: "Thêm món", addMoreSub: "Chọn món khác", finish: "Xong", finishSub: "Đặt như vậy", alwaysListening: "Luôn lắng nghe", micTap: "Nói", micStop: "Dừng", addedCart: "Đã thêm! Bạn muốn gì nữa không?", directType: "Nhập", payVoiceHint: "Bạn cũng có thể nói ‘thẻ’ hoặc ‘tiền mặt’", orderEmpty: "Chưa có đơn",
+        kakaoStart: "Bắt đầu với Kakao", loginTitle: "Bắt đầu bằng một chạm", guestOk: "Không đăng nhập vẫn dùng được tất cả", noKakao: "Không có Kakao? Dùng tên & số điện thoại", signupTitle: "Chỉ cần tên và số điện thoại", signupSub: "Dùng khi cho nhân viên xem đơn", nameLabel: "Tên", phoneLabel: "Số điện thoại", namePh: "vd: Nguyễn Văn A", phonePh: "vd: 010-1234-5678", startBtn: "Bắt đầu", logout: "Đăng xuất", hiSuffix: "", loginOkMsg: "Chào mừng! Đã đăng nhập", loginFailMsg: "Đăng nhập chưa được. Hãy thử tên & số điện thoại.", signupErr: "Vui lòng kiểm tra tên và số điện thoại", loggedOutMsg: "Đã đăng xuất" },
 
   ZH: { title: "人人可用的自助机助手", subtitle: "拍照·说话·按钮，人人都会用",
         bigMode: "大字·大声", speak: "说话", listening: "正在聆听…",
@@ -199,7 +202,8 @@ const I18N = {
         stepRecog: "识别菜单·店名", stepOrder: "自动整理订单", stepStaff: "给店员看",
         reportTitle: "拍照上报", reportHint: "上传菜单、招牌或自助机照片",
         reportBtn: "上传照片", reportDone: "已上报！", reportDoneSub: "谢谢，下一位会更方便",
-        toHome: "回主页", loginSoon: "登录功能即将上线", greetShort: "您好！帮您哪台自助机？请说店名 🙂", greetNote: "目前支持 Paik's、Mom's Touch、麦当劳、Mega Coffee。", addMore: "继续添加", addMoreSub: "再选一个", finish: "完成", finishSub: "就这样下单", alwaysListening: "一直在聆听", micTap: "说话", micStop: "停止", addedCart: "已加入！还要别的吗？", directType: "输入", payVoiceHint: "也可以说‘刷卡’或‘现金’", orderEmpty: "还没有订单" },
+        toHome: "回主页", loginSoon: "登录功能即将上线", greetShort: "您好！帮您哪台自助机？请说店名 🙂", greetNote: "目前支持 Paik's、Mom's Touch、麦当劳、Mega Coffee。", addMore: "继续添加", addMoreSub: "再选一个", finish: "完成", finishSub: "就这样下单", alwaysListening: "一直在聆听", micTap: "说话", micStop: "停止", addedCart: "已加入！还要别的吗？", directType: "输入", payVoiceHint: "也可以说‘刷卡’或‘现金’", orderEmpty: "还没有订单",
+        kakaoStart: "用 Kakao 开始", loginTitle: "一键开始", guestOk: "不登录也能使用全部功能", noKakao: "没有 Kakao？用姓名和电话开始", signupTitle: "只需姓名和电话", signupSub: "给店员看订单时会用到", nameLabel: "姓名", phoneLabel: "电话", namePh: "例：张三", phonePh: "例：010-1234-5678", startBtn: "开始", logout: "退出登录", hiSuffix: "", loginOkMsg: "欢迎！已登录", loginFailMsg: "登录未成功，请改用姓名和电话。", signupErr: "请检查姓名和电话", loggedOutMsg: "已退出登录" },
 
   JA: { title: "みんなのキオスク案内", subtitle: "写真・声・ボタンで誰でも簡単",
         bigMode: "大きい文字・大きい音", speak: "話す", listening: "聞いています…",
@@ -249,7 +253,8 @@ const I18N = {
         stepRecog: "メニュー・店名の認識", stepOrder: "注文の自動整理", stepStaff: "店員に見せる",
         reportTitle: "写真で提報", reportHint: "メニュー・看板・キオスクの写真をどうぞ",
         reportBtn: "写真をあげる", reportDone: "提報しました！", reportDoneSub: "おかげで次の人が楽になります",
-        toHome: "ホームへ", loginSoon: "ログインは準備中です", greetShort: "こんにちは！どのキオスクをお手伝いしましょう？お店の名前を言ってください 🙂", greetNote: "今はペクタバン・マムズタッチ・マクドナルド・メガコーヒーに対応しています。", addMore: "追加する", addMoreSub: "もう一つ選ぶ", finish: "完了", finishSub: "このまま注文", alwaysListening: "常に聞いています", micTap: "話す", micStop: "停止", addedCart: "追加しました！他にもいかがですか？", directType: "入力", payVoiceHint: "「カード」「現金」と言ってもOK", orderEmpty: "まだ注文がありません" }
+        toHome: "ホームへ", loginSoon: "ログインは準備中です", greetShort: "こんにちは！どのキオスクをお手伝いしましょう？お店の名前を言ってください 🙂", greetNote: "今はペクタバン・マムズタッチ・マクドナルド・メガコーヒーに対応しています。", addMore: "追加する", addMoreSub: "もう一つ選ぶ", finish: "完了", finishSub: "このまま注文", alwaysListening: "常に聞いています", micTap: "話す", micStop: "停止", addedCart: "追加しました！他にもいかがですか？", directType: "入力", payVoiceHint: "「カード」「現金」と言ってもOK", orderEmpty: "まだ注文がありません",
+        kakaoStart: "カカオではじめる", loginTitle: "かんたんにはじめる", guestOk: "ログインしなくても全部使えます", noKakao: "カカオが無い方 · 名前と電話ではじめる", signupTitle: "お名前と電話番号だけ", signupSub: "注文を店員に見せるときに使います", nameLabel: "お名前", phoneLabel: "電話番号", namePh: "例: 山田花子", phonePh: "例: 010-1234-5678", startBtn: "はじめる", logout: "ログアウト", hiSuffix: "さん", loginOkMsg: "ようこそ！ログインしました", loginFailMsg: "ログインできませんでした。名前と電話でお試しを。", signupErr: "お名前と電話番号をご確認ください", loggedOutMsg: "ログアウトしました" }
 };
 
 const BCP47 = { KO: "ko-KR", EN: "en-US", VI: "vi-VN", ZH: "zh-CN", JA: "ja-JP" };

@@ -8,7 +8,8 @@ const DEMO_BRAND = "paik";
 const state = {
   language:"KO", brandId:null, brandLabel:null,
   fontScale:17, sound:"high", autoLang:true,
-  screen:"home", knownBrands:new Set(["paik","momstouch","mcdonalds","megacoffee"])
+  screen:"home", knownBrands:new Set(["paik","momstouch","mcdonalds","megacoffee"]),
+  user:null, kakaoEnabled:false   // 로그인은 선택(게스트-우선). user=null 이어도 모든 기능 동작.
 };
 const cart = [];
 let paikData=null, cropCache={};
@@ -54,11 +55,11 @@ async function getSpec(name){
 }
 
 /* ============ 화면 라우터 ============ */
-const SCREENS=["home","chat","mapped","qr","guide","staff","unmapped","report","reportDone"];
+const SCREENS=["home","chat","mapped","qr","guide","staff","unmapped","report","reportDone","login","signup"];
 function show(name){
   state.screen=name;
   SCREENS.forEach(s=>{ const el=document.getElementById("scr-"+s); if(el) el.classList.toggle("active", s===name); });
-  $("#safetyBtn").classList.toggle("hidden", ["home","reportDone","staff"].includes(name));
+  $("#safetyBtn").classList.toggle("hidden", ["home","reportDone","staff","login","signup"].includes(name));
   onEnter(name);
   const scr=document.getElementById("scr-"+name);
   if(scr){ const f=scr.querySelector("h1,h2,.hbtn,.choice,.linkbtn"); if(f){ f.setAttribute("tabindex","-1"); f.focus(); } }
@@ -69,6 +70,8 @@ function onEnter(name){
   if(name==="guide"){ openGuide(); }
   if(name==="staff"){ renderStaffOrder("#staffOrder"); speak(t("staffTitle")); }
   if(name==="unmapped"){ runUnmapped(); }
+  if(name==="login"){ speak(t("loginTitle")+". "+t("guestOk")); }
+  if(name==="signup"){ speak(t("signupTitle")); const n=$("#suName"); if(n) setTimeout(()=>n.focus(),200); }
 }
 
 /* ============ 홈 진입 ============ */
@@ -546,7 +549,13 @@ function setLanguage(code){ state.language=code; buildFlags(); applyUiText(); re
 /* ============ UI 문구 ============ */
 function applyUiText(){
   const set=(id,key)=>{ const e=document.getElementById(id); if(e) e.textContent=t(key); };
-  set("loginBtn","login"); set("signupBtn","signup");
+  // 로그인/간편가입 화면 문구
+  set("loginTitle","loginTitle"); set("kakaoLbl","kakaoStart"); set("noKakaoBtn","noKakao"); set("guestOk","guestOk");
+  set("signupTitle","signupTitle"); set("signupSub","signupSub");
+  set("nameLabel","nameLabel"); set("phoneLabel","phoneLabel"); set("suSubmit","startBtn");
+  const nph=$("#suName"); if(nph) nph.placeholder=t("namePh");
+  const pph=$("#suPhone"); if(pph) pph.placeholder=t("phonePh");
+  renderAuth();   // 헤더의 로그인/이름·로그아웃 라벨도 언어에 맞춰 갱신
   const sl=$("#soundLbl"); if(sl) sl.textContent=soundKey();
   const fl=$("#fontLbl"); if(fl) fl.textContent = state.big ? t("fontSmall") : t("fontBig");
   set("heroBadge","heroBadge"); set("homeTitle","homeTitle"); set("homeSub","homeSub"); set("homeFoot","homeFoot");
@@ -609,6 +618,12 @@ function renderOrderInto(sel){
   if(state.brandLabel){
     const bh=document.createElement("div"); bh.className="order-brand";
     bh.textContent=state.brandLabel; box.appendChild(bh);
+  }
+  // 로그인한 경우 주문서에 이름/전화번호 자동 표기(직원 응대 편의)
+  if(state.user && state.user.name){
+    const cu=document.createElement("div"); cu.className="order-customer";
+    cu.textContent="🧑 "+state.user.name+(state.user.phone?" · "+fmtPhone(state.user.phone):"");
+    box.appendChild(cu);
   }
   const ul=document.createElement("ul"); ul.className="order-list"; let total=0;
   cart.forEach(c=>{ const q=c.qty||1; total+=(c.price||0)*q;
@@ -741,9 +756,88 @@ function initReport(){
   };
 }
 
+/* ============ 로그인 / 간편가입 (선택 · 게스트-우선) ============ */
+/* 로그인은 절대 앱 사용의 전제가 아니다. 안 해도 모든 기능이 동작하고,
+   해두면 주문서에 이름/전화번호가 자동으로 채워져 직원에게 보여주기가 편해진다. */
+async function checkAuth(){
+  try{
+    const r=await fetch("/auth/me",{headers:{Accept:"application/json"}});
+    if(r.ok){ const j=await r.json();
+      state.kakaoEnabled=!!j.kakaoEnabled;
+      state.user = j.loggedIn ? { name:j.name, phone:j.phone, provider:j.provider } : null;
+    }
+  }catch(e){}
+  renderAuth();
+}
+function greetName(u){ return (u&&u.name?u.name:"")+(u&&u.name?t("hiSuffix"):""); }
+function renderAuth(){
+  const box=$("#authArea"); if(!box) return; box.innerHTML="";
+  if(state.user){
+    const who=document.createElement("span"); who.className="who";
+    who.textContent=greetName(state.user)||t("login");
+    const out=document.createElement("button"); out.className="ghostbtn"; out.id="logoutBtn";
+    out.textContent=t("logout"); out.onclick=doLogout;
+    box.appendChild(who); box.appendChild(out);
+  } else {
+    const inb=document.createElement("button"); inb.className="ghostbtn"; inb.id="loginEntry";
+    inb.textContent=t("login"); inb.setAttribute("aria-label",t("login"));
+    inb.onclick=()=>show("login");
+    box.appendChild(inb);
+  }
+}
+function goKakao(){
+  if(state.kakaoEnabled){ location.href="/login/kakao"; }   // 서버가 카카오로 리다이렉트
+  else { show("signup"); toast(t("noKakao")); speak(t("noKakao")); }   // 키 미설정 → 간편가입 우회
+}
+async function submitSignup(e){
+  if(e) e.preventDefault();
+  const name=$("#suName").value.trim(), phone=$("#suPhone").value.trim();
+  const err=$("#suErr");
+  if(!name || phone.replace(/\D/g,"").length<8){
+    err.hidden=false; err.textContent=t("signupErr"); speak(t("signupErr"));
+    (!name?$("#suName"):$("#suPhone")).focus(); return;
+  }
+  err.hidden=true;
+  try{
+    const r=await fetch("/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name,phone})});
+    if(r.ok){ const j=await r.json();
+      state.user={ name:j.name, phone:j.phone, provider:j.provider };
+      renderAuth(); afterLogin();
+    } else { err.hidden=false; err.textContent=t("signupErr"); speak(t("signupErr")); }
+  }catch(err2){ $("#suErr").hidden=false; $("#suErr").textContent=t("signupErr"); }
+}
+function afterLogin(){
+  show("home");
+  toast(t("loginOkMsg")); speak(t("loginOkMsg"));
+}
+async function doLogout(){
+  try{ await fetch("/auth/logout",{method:"POST"}); }catch(e){}
+  state.user=null; renderAuth();
+  toast(t("loggedOutMsg")); speak(t("loggedOutMsg"));
+}
+/* 카카오 콜백 후 홈으로 돌아온 결과(?login=ok/fail/unconfigured) 처리 후 URL 정리 */
+function handleLoginRedirect(){
+  const p=new URLSearchParams(location.search); const r=p.get("login");
+  if(!r) return;
+  if(r==="ok"){ /* checkAuth 가 이미 이름을 채움 */ setTimeout(()=>{ toast(t("loginOkMsg")); speak(t("loginOkMsg")); }, 300); }
+  else if(r==="fail"||r==="unconfigured"){ setTimeout(()=>{ show("signup"); toast(t("loginFailMsg")); speak(t("loginFailMsg")); }, 200); }
+  history.replaceState(null,"",location.pathname);
+}
+function fmtPhone(p){ if(!p) return ""; const d=p.replace(/\D/g,"");
+  return d.length===11 ? d.replace(/(\d{3})(\d{4})(\d{4})/,"$1-$2-$3") : d; }
+
 /* ============ 유틸 ============ */
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
 function scrollDown(){ const c=$("#chat"); if(c) c.scrollTop=c.scrollHeight; }
+let _toastTimer=null;
+function toast(msg){
+  let el=$("#toast");
+  if(!el){ el=document.createElement("div"); el.id="toast"; el.className="toast";
+    el.setAttribute("role","status"); el.setAttribute("aria-live","polite"); document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>el.classList.remove("show"), 1800);
+}
 
 /* ============ 초기화 ============ */
 async function loadKnownBrands(){
@@ -757,7 +851,9 @@ window.addEventListener("DOMContentLoaded", ()=>{
     if(g==="photo") return goPhoto(); show(g); });
   $$("[data-back]").forEach(b=>b.onclick=()=>show(b.getAttribute("data-back")));
   $("#brandHome").onclick=()=>show("home");
-  $("#loginBtn").onclick=$("#signupBtn").onclick=()=>alert(t("loginSoon"));
+  $("#kakaoBtn").onclick=goKakao;
+  $("#noKakaoBtn").onclick=()=>show("signup");
+  $("#signupForm").addEventListener("submit", submitSignup);
   $("#fontToggle").onclick=toggleFont;
   $("#soundBtn").onclick=cycleSound;
   $("#safetyBtn").onclick=()=>show("staff");
@@ -767,5 +863,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
   $("#homePhoto").onchange=(e)=>onHomePhoto(e.target.files[0]);
   $("#text").addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitText(); });
   initReport();
+  checkAuth();            // 로그인 상태 확인 → 헤더 갱신(게스트여도 정상)
+  handleLoginRedirect();  // 카카오 콜백 결과(?login=...) 처리
   show("home");
 });
