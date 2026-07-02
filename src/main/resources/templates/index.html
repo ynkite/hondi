@@ -19,25 +19,15 @@
     <header class="top" id="topbar">
       <div class="topline">
         <button class="brand" id="brandHome" aria-label="오몽 홈으로">
-          <svg class="logo" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
-            <circle cx="22" cy="24" r="16" fill="#F5851F"/>
-            <circle cx="22" cy="24" r="16" fill="none" stroke="#E06E12" stroke-width="1.5"/>
-            <ellipse cx="16" cy="18" rx="4.5" ry="2.6" fill="#FFFFFF" opacity=".35"/>
-            <path d="M22 9c3.5-3.2 8-3.6 10.5-2.2C31 10 27.5 12 23.4 11.6 24.8 10.4 26 9.6 27 9.2 24.8 9 23.2 9.4 22 9z" fill="#3E8E57"/>
-            <rect x="21" y="6" width="2" height="5" rx="1" fill="#7A5A2A"/>
-          </svg>
+          <img class="logo-img" th:src="@{/img/omong-mascot.svg}" src="/img/omong-mascot.svg" alt="" aria-hidden="true" decoding="async">
           <span class="wm">
             <span class="kr">오몽</span>
             <span class="tag">제주 키오스크 도우미</span>
           </span>
         </button>
-        <div class="auth">
-          <button class="ghostbtn" id="loginBtn"></button>
-          <button class="ghostbtn" id="signupBtn"></button>
-        </div>
+        <div class="auth" id="authArea" role="group" aria-label="계정"></div>
       </div>
       <div class="toolrow">
-        <div class="flags" id="flags" role="group" aria-label="언어 선택 / Language"></div>
         <div class="access" role="group" aria-label="화면 설정">
           <button class="access-btn" id="fontToggle" aria-pressed="false">
             <span class="ac-ic" aria-hidden="true">가</span><span id="fontLbl"></span>
@@ -70,7 +60,7 @@
             <span class="hsub" data-k="btnSpeakSub"></span>
           </button>
           <button class="hbtn hbtn-photo" data-go="photo">
-            <span class="hicon" aria-hidden="true">📷</span>
+            <span class="hicon" aria-hidden="true"><svg class="cam-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="body" d="M4 9a2 2 0 0 1 2-2h1.7l.9-1.5A1.2 1.2 0 0 1 9.6 5h4.8a1.2 1.2 0 0 1 1 .5L16.3 7H18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle class="lens" cx="12" cy="12.7" r="3"/></svg></span>
             <span class="hlabel" data-k="btnPhoto"></span>
             <span class="hsub" data-k="btnPhotoSub"></span>
           </button>
@@ -82,6 +72,7 @@
         </div>
         <button class="reorder hidden" id="reorderBtn"></button>
         <input id="homePhoto" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
+        <input id="menuPhoto" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
       </section>
 
       <!-- 2) 주문 구성 (대화 기록 로그 + 답 버튼) -->
@@ -107,7 +98,7 @@
             </button>
           </div>
           <div class="type-row">
-            <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
+            <button class="iconbtn cam" id="cam" aria-label="사진 찍기"><svg class="cam-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="body" d="M4 9a2 2 0 0 1 2-2h1.7l.9-1.5A1.2 1.2 0 0 1 9.6 5h4.8a1.2 1.2 0 0 1 1 .5L16.3 7H18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle class="lens" cx="12" cy="12.7" r="3"/></svg></button>
             <input id="text" type="text" autocomplete="off" enterkeyhint="send" aria-label="직접 입력">
             <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
             <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
@@ -181,7 +172,40 @@
         </div>
       </section>
 
+      <!-- 8) 로그인 (선택 · 게스트 우선) -->
+      <section class="screen" id="scr-login" aria-labelledby="loginTitle">
+        <div class="scrbar"><button class="linkbtn" data-go="home" aria-label="홈으로">‹ <span data-k="home"></span></button></div>
+        <div class="login-wrap">
+          <span class="big-emoji" aria-hidden="true">🍊</span>
+          <h2 class="center-title" id="loginTitle"></h2>
+          <button class="kakao-btn" id="kakaoBtn" type="button"><span class="kakao-ico" aria-hidden="true">💬</span><span id="kakaoLbl"></span></button>
+          <button class="link-alt" id="noKakaoBtn" type="button"></button>
+          <p class="guest-note" id="guestOk"></p>
+        </div>
+      </section>
+
+      <!-- 9) 간편 시작 (이름·전화번호) -->
+      <section class="screen" id="scr-signup" aria-labelledby="signupTitle">
+        <div class="scrbar"><button class="linkbtn" data-back="login" aria-label="뒤로">‹ <span data-k="back"></span></button></div>
+        <form class="signup-wrap" id="signupForm" novalidate>
+          <h2 class="center-title" id="signupTitle"></h2>
+          <p class="center-sub" id="signupSub"></p>
+          <label class="field"><span class="field-label" id="nameLabel"></span>
+            <input id="suName" type="text" autocomplete="name" enterkeyhint="next" autocapitalize="words"></label>
+          <label class="field"><span class="field-label" id="phoneLabel"></span>
+            <input id="suPhone" type="tel" inputmode="numeric" autocomplete="tel" enterkeyhint="done"></label>
+          <p class="signup-err" id="suErr" role="alert" aria-live="assertive" hidden></p>
+          <button class="primary big-cta" id="suSubmit" type="submit"></button>
+        </form>
+      </section>
+
     </main>
+
+    <!-- 시연용 언어 선택 (화면 최하단) -->
+    <nav class="langbar" id="langbar" aria-label="언어 선택 / Language">
+      <div class="flags" id="flags" role="group"></div>
+      <p class="langbar-note" id="langNote"></p>
+    </nav>
 
     <!-- 스크린리더 전용 라이브 안내 (음성 안내와 동기화) -->
     <p class="sr-only" id="srLive" role="status" aria-live="polite"></p>

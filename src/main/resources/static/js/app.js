@@ -5,11 +5,14 @@
 // iPhone(Safari)/Galaxy(Chrome) 공통 + 스크린리더 지원 + i18n 자동.
 
 const DEMO_BRAND = "paik";
+const IS_MOBILE = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) || ((navigator.maxTouchPoints||0)>1 && window.matchMedia && matchMedia("(pointer:coarse)").matches);
 const state = {
   language:"KO", brandId:null, brandLabel:null,
   sound:"high", big:false, autoLang:true,
   screen:"home", stage:"entry", payMethod:null,
   listening:false, speaking:false, ttsUnlocked:false,
+  user:null, kakaoEnabled:false,
+  plan:[], planCursor:0, planReady:false,
   knownBrands:new Set(["paik","momstouch","mcdonalds","megacoffee"])
 };
 const cart = [];
@@ -54,11 +57,13 @@ async function getSpec(name){
 }
 
 /* ============ 화면 라우터 ============ */
-const SCREENS=["home","order","guide","qr","staff","report","reportDone"];
+const SCREENS=["home","order","guide","qr","staff","report","reportDone","login","signup"];
 function show(name){
+  flushSpeech();
   state.screen=name;
   SCREENS.forEach(s=>{ const el=document.getElementById("scr-"+s); if(el) el.classList.toggle("active", s===name); });
   if(name==="home"){ stopListening(); cart.length=0; renderCart(); refreshReorder(); }
+  const lb=document.getElementById("langbar"); if(lb) lb.classList.toggle("hidden", name!=="home");
   onEnter(name);
   const scr=document.getElementById("scr-"+name);
   if(scr){ const f=scr.querySelector("h1,h2,.scrtitle,.hbtn,.linkbtn"); if(f){ f.setAttribute("tabindex","-1"); try{f.focus();}catch(e){} } }
@@ -140,7 +145,8 @@ function goPhoto(){
   // 내 사진 올리기
   const up=addOpts(1);
   const b=document.createElement("button"); b.className="qbtn"; b.type="button";
-  b.innerHTML=`<span class="qi" aria-hidden="true">📁</span><span class="qt">${esc(t("reportBtn"))}</span>`;
+  const upIcon=IS_MOBILE?"📷":"📁", upLabel=IS_MOBILE?t("takePhoto"):t("uploadFile");
+  b.innerHTML=`<span class="qi" aria-hidden="true">${upIcon}</span><span class="qt">${esc(upLabel)}</span>`;
   b.onclick=()=>{ $("#homePhoto").value=""; $("#homePhoto").click(); };
   up.appendChild(b);
   renderPhotoGrid();
@@ -175,22 +181,68 @@ async function useDemoPhoto(d){
     const blob=await (await fetch(d.src)).blob();
     const fd=new FormData(); fd.append("image", new File([blob],"demo.jpg",{type:"image/jpeg"}));
     const a=await (await fetch("/api/recognize",{method:"POST",body:fd})).json();
-    if(a && a.brandId && a.brandId!=="NONE") return startBrand(a.brandId, a.brandName||a.brandId);
+    if(a && a.brandId && a.brandId!=="NONE"){
+      if(isKnownBrand(a.brandId)) return startBrand(a.brandId, a.brandName||a.brandId);
+      return photoComingSoon(a.brandName);
+    }
   }catch(e){}
   const hit=KNOWN.find(k=>k.id===d.brand);
   startBrand(d.brand, hit?hit.label:d.label);
 }
+function isKnownBrand(id){ return !!SPEC_FILES[id] || state.knownBrands.has(id); }
+/* 아는 브랜드가 아니어도 사진에서 상호/종류를 인식 → "○○이네요" + 다음 안내 */
+function comingSoonMsg(name){ return name ? t("comingSoonNamed").replace("{name}", name) : t("brandSoon"); }
+/* 말하기/입력: 준비중 안내만. 돌아가지 않고 계속 대화. */
+function entryComingSoon(name){
+  clearActiveOpts();
+  addBot(comingSoonMsg(name));
+}
+/* 사진찍기: 준비중 안내 + 5초 후 메인 복귀(음성은 전체 낭독). */
+function photoComingSoon(name){
+  clearActiveOpts();
+  addBot(comingSoonMsg(name));
+  addBot(t("returnHome"));
+  setTimeout(()=>{ if(state.screen==="order") show("home"); }, 5000);
+}
+/* 메뉴판 사진 → AI가 메뉴 추출·등록(/api/report) → 바로 주문 도우기 */
+async function onMenuPhoto(file){
+  if(!file) return;
+  clearActiveOpts(); addMediaMsg(URL.createObjectURL(file)); addBot(t("recognizing"));
+  const fd=new FormData(); fd.append("image",file);
+  try{
+    const j=await (await fetch("/api/report",{method:"POST",body:fd})).json();
+    if(j && j.ok && j.brandId){ openOrder(j.brandName||t("btnPhoto")); return startBrand(j.brandId, j.brandName||j.brandId); }
+  }catch(e){}
+  addBot(t("photoUnclear"));
+}
 async function handleEntry(text){
   const hit=KNOWN.find(k=>k.re.test(text));
   if(hit) return startBrand(hit.id, hit.label);
-  if(/(몰라|모르|못\s*찍|못\s*해|안\s*돼|안돼|없어|어렵)/.test(text)) return entrySoon();
-  let brand=null;
+  if(/(사진.?못|못\s*찍|못\s*해|안\s*찍)/.test(text)) return entrySoon();
+  // 스마트 대화: 잡담도 자연스럽게 받되 가게를 추측해 확인
   try{
-    const r=await fetch("/api/intent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});
-    if(r.ok){ const j=await r.json(); if(j && j.brandId && j.brandId!=="NONE") brand=j; }
+    const r=await fetch("/api/converse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});
+    if(r.ok){ const j=await r.json();
+      if(j.reply) addBot(j.reply);
+      if(j.brandId && j.brandId!=="NONE"){
+        if(isKnownBrand(j.brandId)) return confirmBrand(j.brandId, j.brandName||j.brandId);
+        return entryComingSoon(j.brandName);
+      }
+      return;   // 잡담 → 계속 대화 (다음 발화/입력 대기)
+    }
   }catch(e){}
-  if(brand) startBrand(brand.brandId, brand.brandName||brand.brandId);
-  else entryUnknown();
+  entryUnknown();
+}
+/* AI가 추측한 가게가 맞는지 확인 */
+function confirmBrand(id,label){
+  const el=addOpts(2);
+  const yes=document.createElement("button"); yes.className="qbtn"; yes.type="button";
+  yes.innerHTML=`<span class="qi" aria-hidden="true">✅</span><span class="qt">${esc(t("confirmYes"))}</span>`;
+  yes.onclick=()=>{ addUser(t("confirmYes")); startBrand(id,label); };
+  const no=document.createElement("button"); no.className="qbtn"; no.type="button";
+  no.innerHTML=`<span class="qi" aria-hidden="true">🔄</span><span class="qt">${esc(t("confirmNo"))}</span>`;
+  no.onclick=()=>{ addUser(t("confirmNo")); addBot(t("greetShort")); };
+  el.appendChild(yes); el.appendChild(no); focusLastOpt();
 }
 async function startBrand(brandId, label){
   state.brandId=brandId; state.brandLabel=label;
@@ -200,7 +252,7 @@ async function startBrand(brandId, label){
   if(!coffeeItems().length){ brandSoon(label); return; }
   state.stage="funnel";
   addBot(label+t("recognizedSuffix"));
-  resetFunnel(); setTimeout(funnelStep, 350);
+  resetFunnel(); loadPlan(); setTimeout(funnelStep, 350);
 }
 function brandSoon(label){
   clearActiveOpts();
@@ -228,30 +280,88 @@ async function onHomePhoto(file){
   try{
     const res=await fetch("/api/recognize",{method:"POST",body:fd});
     const a=await res.json();
-    if(a && a.brandId && a.brandId!=="NONE") return startBrand(a.brandId, a.brandName||a.brandId);
-    brandSoon("");
-  }catch(e){ brandSoon(""); }
+    if(a && a.brandId && a.brandId!=="NONE"){
+      if(isKnownBrand(a.brandId)) return startBrand(a.brandId, a.brandName||a.brandId);
+      return photoComingSoon(a.brandName);
+    }
+    photoComingSoon((a&&a.brandName)||null);
+  }catch(e){ photoComingSoon(null); }
 }
 
 /* ============ 좁혀가기(funnel) ============ */
 let remainingIds=[], askedDims=new Set();
-function resetFunnel(){ remainingIds = coffeeItems().map(it=>it.id); askedDims=new Set(); }
+function resetFunnel(){ remainingIds = coffeeItems().map(it=>it.id); askedDims=new Set(); state.planCursor=0; }
 function itemsByIds(ids){ const m=new Map(coffeeItems().map(it=>[it.id,it])); return ids.map(id=>m.get(id)).filter(Boolean); }
+/* 매장 메뉴 기반 '질문 계획'을 AI에게 한 번 받아둔다(백그라운드). 준비되면 funnelStep이 즉시 걸어감. */
+function loadPlan(){
+  state.plan=[]; state.planCursor=0; state.planReady=false;
+  const items=coffeeItems(); if(items.length<3) return;
+  fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({language:state.language, brandName:state.brandLabel, items:items.map(i=>({id:i.id,name:i.name}))})})
+    .then(r=>r.ok?r.json():[]).then(arr=>{ if(Array.isArray(arr)&&arr.length){ state.plan=arr; state.planReady=true; } }).catch(()=>{});
+}
+/* 계획에서 지금 남은 후보를 실제로 갈라주는 다음 질문 하나를 즉시 반환(빈 그룹 제거, 못 나누면 건너뜀). */
+function planNext(items){
+  if(!state.planReady || !state.plan) return null;
+  const remain=new Set(items.map(it=>it.id));
+  while(state.planCursor < state.plan.length){
+    const q=state.plan[state.planCursor]; state.planCursor++;
+    const opts=(q.options||[]).map(o=>({label:o.label,icon:o.icon,ids:(o.ids||[]).filter(id=>remain.has(id))})).filter(o=>o.ids.length);
+    if(opts.length>=2 && opts.some(o=>o.ids.length<items.length)) return {question:q.question, options:opts.slice(0,4)};
+  }
+  return null;
+}
+/* 종류(cat)로 먼저 크게 나누는 질문: 버거/치킨/사이드/음료 등 (최대 4개, 초과 시 '그 밖에') */
+const CAT_ICON={ "버거":"🍔","치킨":"🍗","사이드":"🍟","음료":"🥤","커피":"☕","디저트":"🍰","세트":"🍱","스무디":"🧋","쉐이크":"🥤","에이드":"🥤","차":"🍵","아이스크림":"🍦","밥":"🍚","면":"🍜","분식":"🍢","빵":"🥐" };
+// 어르신·아이도 아는 쉬운 말(그림과 함께 표시)
+const CAT_LABEL={
+  "버거":"햄버거","치킨":"치킨","사이드":"짭짤한 간식","음료":"마실 것","커피":"커피",
+  "디저트":"달콤한 후식","세트":"묶음 세트","스무디":"시원한 스무디","쉐이크":"쉐이크",
+  "에이드":"상큼한 에이드","차":"따뜻한 차","아이스크림":"아이스크림","밥":"밥 종류","면":"면 종류","분식":"분식","빵":"빵·베이커리"
+};
+function categoryQuestion(items){
+  const map={}; items.forEach(it=>{ if(it.cat){ (map[it.cat]=map[it.cat]||[]).push(it.id); } });
+  const keys=Object.keys(map);
+  if(keys.length<2) return null;
+  let opts;
+  if(keys.length<=4){ opts=keys.map(c=>({label:CAT_LABEL[c]||c,icon:CAT_ICON[c]||"🍽️",ids:map[c]})); }
+  else{ opts=keys.slice(0,3).map(c=>({label:CAT_LABEL[c]||c,icon:CAT_ICON[c]||"🍽️",ids:map[c]}));
+        opts.push({label:"다른 메뉴",icon:"🍽️",ids:[].concat(...keys.slice(3).map(c=>map[c]))}); }
+  return { question:"무엇을 드시겠어요?", options:opts };
+}
+/* 선택 화면용 보기 좋은 이름: 옵션 줄임말 괄호(쉼표 든 것)는 떼고, HOT/ICED는 풀어씀. (장바구니·주문서엔 원래 이름 그대로 사용) */
+function displayName(name){
+  let n=name||"";
+  n=n.replace(/\([^)]*,[^)]*\)/g,"");                       // "(아,샷,추)" 같은 옵션 줄임말 제거
+  n=n.replace(/\(\s*HOT\s*\)/gi,"(따뜻한)").replace(/\(\s*(ICED|ICE|아이스)\s*\)/gi,"(시원한)");
+  return n.replace(/\s{2,}/g," ").trim();
+}
+/* 이름을 몰라도 알 수 있게, 이름에서 짧은 특징(맛·재료)을 뽑아 보여준다. */
+function itemHint(it){
+  const n=it.name||""; const tags=[];
+  if(it.cat && it.cat!=="버거") tags.push(CAT_LABEL[it.cat]||it.cat);
+  if(/매콤|매운|불사|핫|스파이시|할라피뇨|불싸이/.test(n)) tags.push("매콤한 맛");
+  else if(/순한|화이트|담백/.test(n)) tags.push("순한 맛");
+  if(/불고기/.test(n)) tags.push("불고기");
+  if(/새우/.test(n)) tags.push("새우");
+  if(/갈비/.test(n)) tags.push("갈비");
+  if(/치즈/.test(n)) tags.push("치즈");
+  if(/강정|양념|데리야?끼/.test(n)) tags.push("달콤한 양념");
+  if(/후라이드|후레이크|바삭|크리스피/.test(n)) tags.push("바삭한 튀김");
+  if(/순살/.test(n)) tags.push("뼈 없는 순살");
+  return [...new Set(tags)].slice(0,2).join(" · ");
+}
+
 async function funnelStep(){
   const items = itemsByIds(remainingIds);
   if(items.length<=1){ if(items[0]) resolveItem(items[0]); return; }
-  let q = null;
-  try{
-    const res = await fetch("/api/funnel",{ method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ language:state.language, brandName:state.brandLabel,
-        items: items.map(it=>({id:it.id,name:it.name})) }) });
-    if(res.ok){ const j = await res.json(); if(j && j.question && j.options && j.options.length) q = j; }
-  }catch(e){}
-  if(!q) q = clientQuestion(items);
-  if(!q){ renderFinalPick(items); return; }
+  let q = planNext(items) || categoryQuestion(items) || clientQuestion(items);
+  if(!q){ renderFinalPick(items); return; }              // 못 나누면 후보 목록(최대 4개)
+  if(q.options && q.options.length>4) q.options=q.options.slice(0,4);   // 선택지 최대 4개
   renderQuestion(q);
 }
 function renderQuestion(q){
+  state.currentQ=q;
   addBot(q.question);
   const wrap=addOpts(q.options.length);
   q.options.forEach(o=>{
@@ -271,19 +381,22 @@ function chooseFunnel(q,o){
   funnelStep();
 }
 function renderFinalPick(items){
+  items=items.slice(0,4);                              // 한 번에 최대 4개만
   addBot(t("pickOne"));
   clearActiveOpts();
   const box=document.createElement("div"); box.className="options"; box.setAttribute("role","group");
   items.forEach(it=>{
+    const hint=itemHint(it); const dn=displayName(it.name);
     const b=document.createElement("button"); b.className="opt"; b.type="button";
-    b.setAttribute("aria-label", it.name+", "+it.price+" "+t("won"));
-    b.innerHTML=`<span class="name">${esc(it.name)}</span><span class="price">${won(it.price)}</span>`;
-    b.onclick=()=>{ addUser(it.name); resolveItem(it); };
+    b.setAttribute("aria-label", dn+(hint?", "+hint:"")+", "+it.price+" "+t("won"));
+    b.innerHTML=`<span class="name">${esc(dn)}${hint?'<span class="opt-hint">'+esc(hint)+'</span>':''}</span><span class="price">${won(it.price)}</span>`;
+    b.onclick=()=>{ addUser(dn); resolveItem(it); };
     box.appendChild(b);
   });
   logEl().appendChild(box); scrollDown(); focusLastOpt();
 }
 function resolveItem(it){
+  state.currentQ=null;
   cart.push({ id:it.id, label:it.name, price:it.price, qty:1 });
   renderCart();
   addBot(it.name+" — "+t("chosen"));
@@ -502,7 +615,7 @@ function buildFlags(){
   Object.keys(FLAGS).forEach(code=>{
     const b=document.createElement("button"); b.type="button";
     b.className="flag"+(code===state.language?" active":"");
-    b.textContent=FLAGS[code];
+    b.textContent=NATIVE[code];   // 각 나라 언어로 표기 (한국어 | English | ...)
     b.setAttribute("aria-pressed", code===state.language?"true":"false");
     b.setAttribute("aria-label", NATIVE[code]); b.title=NATIVE[code];
     b.onclick=()=>setLanguage(code);
@@ -516,7 +629,12 @@ function setLanguage(code){ state.language=code; buildFlags(); applyUiText(); re
 function set0(id,txt){ const e=document.getElementById(id); if(e) e.textContent=txt; }
 function applyUiText(){
   const setk=(id,key)=>set0(id,t(key));
-  setk("loginBtn","login"); setk("signupBtn","signup");
+  setk("loginTitle","loginTitle"); set0("kakaoLbl",t("kakaoStart")); set0("noKakaoBtn",t("noKakao")); setk("guestOk","guestOk");
+  setk("signupTitle","signupTitle"); setk("signupSub","signupSub"); setk("nameLabel","nameLabel"); setk("phoneLabel","phoneLabel");
+  const _su=$("#suSubmit"); if(_su) _su.textContent=t("startBtn");
+  const _sn=$("#suName"); if(_sn) _sn.placeholder=t("namePh");
+  const _sp=$("#suPhone"); if(_sp) _sp.placeholder=t("phonePh");
+  renderAuth();
   set0("soundLbl", soundKey());                                   // ← 값 직접(버그 수정)
   set0("fontLbl", state.big ? t("fontSmall") : t("fontBig"));     // ← 값 직접(버그 수정)
   setk("heroBadge","heroBadge"); setk("homeTitle","homeTitle"); setk("homeSub","homeSub");
@@ -529,7 +647,11 @@ function applyUiText(){
   const th=$("#toHomeBtn"); if(th) th.textContent=t("toHome");
   if($("#text")) $("#text").placeholder=t("directType");
   $$("[data-k]").forEach(e=>e.textContent=t(e.getAttribute("data-k")));
+  set0("langNote", t("langDemoNote"));
+  const pl=document.querySelector(".hbtn-photo .hlabel"); if(pl) pl.textContent = state.big ? t("btnPhotoShort") : t("btnPhoto");
+  const rl=document.querySelector(".hbtn-report .hlabel"); if(rl) rl.textContent = state.big ? t("btnReportShort") : t("btnReport");
   setListenUI(state.listening);
+  refreshReorder();
 }
 
 /* ============ 접근성: 글자 크게 / 소리 ============ */
@@ -538,7 +660,7 @@ function toggleFont(){
   document.documentElement.classList.toggle("big", state.big);
   const btn=$("#fontToggle"); if(btn) btn.setAttribute("aria-pressed", state.big?"true":"false");
   const ic=btn && btn.querySelector(".ac-ic"); if(ic) ic.textContent = state.big ? "가－" : "가";
-  set0("fontLbl", state.big ? t("fontSmall") : t("fontBig"));
+  applyUiText();
   speak(state.big ? t("fontBig") : t("fontSmall"));
 }
 function soundKey(){ return state.sound==="high"?t("soundHigh"):state.sound==="mid"?t("soundMid"):t("soundOff"); }
@@ -547,7 +669,7 @@ function cycleSound(){
   set0("soundLbl", soundKey());
   const ic=$("#soundIcon"); if(ic) ic.textContent = state.sound==="off"?"🔇":"🔊";
   const btn=$("#soundBtn"); if(btn) btn.setAttribute("aria-pressed", state.sound==="off"?"false":"true");
-  if(state.sound==="off" && window.speechSynthesis){ try{window.speechSynthesis.cancel();}catch(e){} }
+  if(state.sound==="off"){ flushSpeech(); }
   else speak(soundKey());
 }
 
@@ -577,6 +699,8 @@ function renderOrderInto(sel){
   const box=$(sel); if(!box) return; box.innerHTML="";
   if(!cart.length){ box.innerHTML=`<p class="center-sub">${esc(t("orderEmpty"))}</p>`; return; }
   if(state.brandLabel){ const bh=document.createElement("div"); bh.className="order-brand"; bh.textContent=state.brandLabel; box.appendChild(bh); }
+  if(state.user && state.user.name){ const cu=document.createElement("div"); cu.className="order-customer";
+    cu.textContent="🧑 "+state.user.name+(state.user.phone?" · "+fmtPhone(state.user.phone):""); box.appendChild(cu); }
   const ul=document.createElement("ul"); ul.className="order-list"; let total=0;
   cart.forEach(c=>{ const q=c.qty||1; total+=(c.price||0)*q;
     const li=document.createElement("li");
@@ -644,9 +768,9 @@ function saveLastOrder(){
 function loadLastOrder(){ try{ return JSON.parse(localStorage.getItem("omong_last")||"null"); }catch(e){ return null; } }
 function refreshReorder(){
   const b=$("#reorderBtn"); if(!b) return; const lo=loadLastOrder();
-  if(lo && lo.cart && lo.cart.length){
+  if(state.user && lo && lo.cart && lo.cart.length){
     b.classList.remove("hidden");
-    b.textContent="🕘 "+t("recentOrder")+" · "+(lo.brandLabel||"")+" ("+lo.cart.length+")";
+    b.textContent="🕘 "+(state.big?t("recentShort"):t("recentOrder"))+" · "+(lo.brandLabel||"")+" ("+lo.cart.length+")";
     b.onclick=()=>reorder(lo);
   } else b.classList.add("hidden");
 }
@@ -675,7 +799,12 @@ function listenOnce(){
   if(!state.listening || state.speaking || recog) return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
   recog=new SR(); recog.lang=BCP47[state.language]; recog.interimResults=false; recog.maxAlternatives=1;
-  recog.onresult=(ev)=>{ const said=(ev.results[0][0].transcript||"").trim(); if(said){ addUser(said); routeUtterance(said); } };
+  recog.onresult=(ev)=>{ const said=(ev.results[0][0].transcript||"").trim();
+    if(!said) return;
+    const ns=said.replace(/\s/g,""), nl=(state.lastSpoken||"").replace(/\s/g,"");
+    if(nl && ns.length>=3 && (nl.includes(ns)||ns.includes(nl))) return;   // 앱 음성 에코 무시
+    addUser(said); routeUtterance(said);
+  };
   recog.onerror=(e)=>{ const w=e&&e.error;
     if(w==="not-allowed"||w==="service-not-allowed"){ srSay("마이크 권한을 허용해 주세요."); stopListening(); } };
   recog.onend=()=>{ recog=null; if(state.listening && !state.speaking) setTimeout(listenOnce, 250); };
@@ -683,11 +812,72 @@ function listenOnce(){
 }
 function routeUtterance(text){
   maybeAutoSwitch(text);
+  if(/다른\s*가게|다른\s*데|가게\s*바꾸|바꾸고\s*싶|처음으로|처음부터|취소|리셋|홈으로|change\s*store|different\s*store/i.test(text)) return backToEntry();
   if(state.screen==="guide") return guideVoice(text);
   if(state.stage==="entry") return handleEntry(text);
   if(state.stage==="cartDecision") return decisionVoice(text);
+  if(state.stage==="funnel" && state.currentQ){ return resolveFunnelUtterance(text); }
   const it=matchItem(text); if(it) return resolveItem(it);
   aiPick(text);
+}
+/* 다른 가게로 바꾸기 (어느 단계에서든) */
+function backToEntry(){
+  flushSpeech();
+  state.brandId=null; state.brandLabel=null; state.spec=null; state.currentQ=null;
+  cart.length=0; renderCart(); state.stage="entry";
+  addBot(t("greetShort")); addNote(t("greetNote")); renderBrandButtons();
+}
+/* 발화/입력 → 현재 질문의 '선택지' 매칭 (시원한거/차가운거/얼음/이시린거 등 동의어) */
+const OPT_SYN=[
+ {label:/시원|아이스|차가|ICED|얼음|콜드/i, user:/시원|차가|아이스|얼음|시린|찬거|찬것|찬\s|콜드|cold|ice/i},
+ {label:/따뜻|뜨거|HOT|핫|뜨신/i,          user:/뜨거|따뜻|핫|뜨신|따신|hot|warm/i},
+ {label:/달콤|단|달달|꿀/i,                 user:/달콤|단거|단것|달달|달달한|꿀|sweet/i},
+ {label:/안\s*단|쓴|깔끔|진한/i,            user:/안단|안달|안\s*단|쓴|깔끔|진한|씁쓸|bitter/i},
+ {label:/커피/i,                            user:/커피|라떼|아메리카노|아메|에스프레소|coffee|latte/i},
+ {label:/아닌|과일|차|음료/i,               user:/과일|차\s|음료|주스|스무디|에이드|아닌|아니/i},
+ {label:/많이|빽사이즈|큰/i,                user:/많이|많은|큰거|크게|빽사이즈|곱빼기|라지|large|big/i},
+ {label:/보통|적게/i,                       user:/보통|적게|작은|기본|normal|small/i},
+ {label:/치킨/i,                            user:/치킨|닭|chicken/i},
+ {label:/소고기|비프|불고기/i,              user:/소고기|비프|불고기|beef/i},
+ {label:/매콤|매운/i,                       user:/매콤|매운|맵|spicy/i},
+ {label:/순한|안\s*매/i,                    user:/순한|안매|안맵|mild/i}
+];
+function matchOption(text, opts){
+  if(!opts) return null;
+  const sflat=text.replace(/\s/g,"");
+  for(const o of opts){ const l=(o.label||"").replace(/\s/g,""); if(l && (sflat.includes(l)||(l.length>=2 && l.includes(sflat)))) return o; }
+  for(const grp of OPT_SYN){ if(grp.user.test(text)){ const o=opts.find(x=>grp.label.test(x.label||"")); if(o) return o; } }
+  return null;
+}
+/* AI 우선: 현재 질문의 선택지를 AI가 판단(‘이 시린 거’ 등도) → 실패 시 동의어 규칙 폴백 */
+async function aiPickOptionReturn(text){
+  const q=state.currentQ; if(!q) return null;
+  try{
+    const items=q.options.map((o,i)=>({id:String(i),name:o.label}));
+    const r=await fetch("/api/pick",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text, language:state.language, items})});
+    if(r.ok){ const j=await r.json(); if(j&&j.itemId&&j.itemId!=="NONE"){ const o=q.options[parseInt(j.itemId,10)]; if(o) return o; } }
+  }catch(e){}
+  return null;
+}
+async function resolveFunnelUtterance(text){
+  const q=state.currentQ; if(!q){ addBot(t("pickFromMenu")); return; }
+  // 1) 사용자가 구체 메뉴를 바로 말함 → 즉시 확정
+  const it=matchItem(text); if(it){ addUser(it.name); return resolveItem(it); }
+  // 2) 동의어 규칙 먼저(즉시): 시원/따뜻/달/안단/커피 등
+  const o=matchOption(text, q.options);
+  if(o){ addUser(o.label); return chooseFunnel(q, o); }
+  // 3) 규칙으로 애매하면 그때만 AI가 선택지 판단
+  const ai=await aiPickOptionReturn(text);
+  if(ai){ addUser(ai.label); return chooseFunnel(q, ai); }
+  // 4) AI가 전체 메뉴에서 구체 메뉴 추론
+  const items=coffeeItems();
+  try{
+    const r=await fetch("/api/pick",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text, language:state.language, items:items.map(i=>({id:i.id,name:i.name}))})});
+    if(r.ok){ const j=await r.json(); if(j&&j.itemId&&j.itemId!=="NONE"){ const f=items.find(i=>i.id===j.itemId); if(f){ addUser(f.name); return resolveItem(f); } } }
+  }catch(e){}
+  addBot(t("pickFromMenu"));
 }
 const RE_CARD=/카드|card|thẻ|the|刷卡|カード/i;
 const RE_CASH=/현금|cash|tiền\s*mặt|tien\s*mat|现金|現金/i;
@@ -726,24 +916,45 @@ function unlockTTS(){
   if(state.ttsUnlocked || !window.speechSynthesis) return;
   try{ const u=new SpeechSynthesisUtterance(" "); u.volume=0; window.speechSynthesis.speak(u); state.ttsUnlocked=true; }catch(e){}
 }
+function stripEmoji(s){ return (s||"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{1F1E6}-\u{1F1FF}]/gu,"").replace(/\s+/g," ").trim(); }
+let voicesCache=[];
+function loadVoices(){ try{ voicesCache=window.speechSynthesis.getVoices()||[]; }catch(e){} }
+function pickVoice(){
+  if(!voicesCache.length) loadVoices();
+  const two=(BCP47[state.language]||"ko-KR").slice(0,2).toLowerCase();
+  const cand=voicesCache.filter(v=>v.lang && v.lang.toLowerCase().startsWith(two));
+  return cand.find(v=>/google|natural|neural|siri|yuna|premium|enhanced|wavenet/i.test(v.name))
+      || cand.find(v=>v.localService) || cand[0] || null;
+}
+let speakQ=[];
+function flushSpeech(){ speakQ=[]; try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){} state.speaking=false; }
+/* 연속 낭독 큐: 여러 말풍선이 잇달아 떠도 이전 문장을 끊지 않고 전부 읽는다. */
 function speak(text, opt){
   const onEnd = opt && opt.onEnd;
-  if(!text || state.sound==="off" || !window.speechSynthesis){
+  const clean = stripEmoji(text);                    // 이모지는 읽지 않음
+  if(!clean || state.sound==="off" || !window.speechSynthesis){
     if(onEnd) setTimeout(onEnd, 10);
-    if(state.listening && !state.speaking) setTimeout(listenOnce,150);
+    if(state.listening && !state.speaking && !speakQ.length) setTimeout(listenOnce,150);
     return;
   }
+  speakQ.push({clean, onEnd});
+  if(!state.speaking) playQueue();
+}
+function playQueue(){
+  if(!window.speechSynthesis) return;
+  if(!speakQ.length){ state.speaking=false; if(state.listening) setTimeout(listenOnce,500); return; }
+  state.speaking=true;
+  if(recog){ try{ recog.onend=null; recog.stop(); }catch(e){} recog=null; }   // 낭독 중 듣기 정지(에코 방지)
+  const item=speakQ.shift();
+  state.lastSpoken=item.clean;
   try{
     window.speechSynthesis.cancel();
-    if(state.listening){ state.speaking=true; if(recog){ try{ recog.onend=null; recog.stop(); }catch(e){} recog=null; } }
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang=BCP47[state.language]; u.rate=state.big?0.92:1.0; u.volume=state.sound==="mid"?0.6:1.0;
-    u.onend=u.onerror=()=>{
-      if(state.speaking){ state.speaking=false; if(state.listening) setTimeout(listenOnce,200); }
-      if(onEnd) onEnd();
-    };
+    const u=new SpeechSynthesisUtterance(item.clean);
+    u.lang=BCP47[state.language]; u.rate=1.0; u.pitch=1.0; u.volume=state.sound==="mid"?0.85:1.0;
+    const v=pickVoice(); if(v) u.voice=v;
+    u.onend=u.onerror=()=>{ if(item.onEnd) item.onEnd(); playQueue(); };
     window.speechSynthesis.speak(u);
-  }catch(e){ state.speaking=false; if(onEnd) onEnd(); if(state.listening) setTimeout(listenOnce,200); }
+  }catch(e){ if(item.onEnd) item.onEnd(); playQueue(); }
 }
 
 /* ============ 직접 입력 ============ */
@@ -765,7 +976,7 @@ function matchItem(text){
 }
 
 /* ============ 규칙 폴백 질문 ============ */
-function isSweet(it){ return /꿀|헤이즐넛|피스타치오|생크림|라떼|바닐라|초코|할메가/.test(it.name); }
+function isSweet(it){ return /꿀|헤이즐넛|피스타치오|생크림|라떼|바닐라|초코|할메가|강정|양념|데리야/.test(it.name); }
 function isHot(it){ return /HOT|에스프레소/.test(it.name); }
 function isIce(it){ return /ICED|ICE|아이스/.test(it.name); }
 function isBig(it){ return /빽사이즈|메가리카노/.test(it.name); }
@@ -816,11 +1027,69 @@ function initReport(){
   $("#reportFile").onchange=(e)=>{
     const f=e.target.files[0]; if(!f) return;
     $("#reportPreview").innerHTML=`<img src="${URL.createObjectURL(f)}" alt="제보 사진 미리보기">`;
-    try{ const fd=new FormData(); fd.append("image",f); fetch("/api/report",{method:"POST",body:fd}).catch(()=>{}); }catch(err){}
+    try{ const fd=new FormData(); fd.append("image",f); if(state.user&&state.user.name) fd.append("reporterName",state.user.name); fetch("/api/report",{method:"POST",body:fd}).catch(()=>{}); }catch(err){}
     applyUiText();
     show("reportDone");
     speak(t("reportThanks")+" "+t("reportCrowd"));
   };
+}
+
+/* ============ 로그인 / 간편가입 (선택 · 게스트 우선) ============ */
+let _toastTimer;
+function toast(msg){
+  let el=$("#toast");
+  if(!el){ el=document.createElement("div"); el.id="toast"; el.className="toast"; el.setAttribute("role","status"); el.setAttribute("aria-live","polite"); document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>el.classList.remove("show"), 1800);
+}
+function fmtPhone(p){ if(!p) return ""; const d=p.replace(/\D/g,""); return d.length===11 ? d.replace(/(\d{3})(\d{4})(\d{4})/,"$1-$2-$3") : d; }
+function greetName(u){ return (u&&u.name?u.name:"")+(u&&u.name?t("hiSuffix"):""); }
+async function checkAuth(){
+  try{
+    const r=await fetch("/auth/me",{headers:{Accept:"application/json"}});
+    if(r.ok){ const j=await r.json();
+      state.kakaoEnabled=!!j.kakaoEnabled;
+      state.user = j.loggedIn ? { name:j.name, phone:j.phone, provider:j.provider, admin:!!j.admin } : null;
+    }
+  }catch(e){}
+  renderAuth(); refreshReorder();
+}
+function renderAuth(){
+  const box=$("#authArea"); if(!box) return; box.innerHTML="";
+  if(state.user){
+    const who=document.createElement("span"); who.className="who"; who.textContent=greetName(state.user)||t("login"); box.appendChild(who);
+    const out=document.createElement("button"); out.className="ghostbtn"; out.type="button"; out.textContent=t("logout"); out.onclick=doLogout; box.appendChild(out);
+  } else {
+    const inb=document.createElement("button"); inb.className="ghostbtn"; inb.type="button"; inb.textContent=t("login"); inb.setAttribute("aria-label",t("login")); inb.onclick=()=>{ unlockTTS(); show("login"); }; box.appendChild(inb);
+  }
+  // 관리자 페이지 상시 접근(데모)
+  const adm=document.createElement("a"); adm.className="ghostbtn admin-link"; adm.href="/admin"; adm.textContent="관리자"; adm.setAttribute("aria-label","관리자 페이지"); box.appendChild(adm);
+}
+function goKakao(){
+  if(state.kakaoEnabled){ location.href="/login/kakao"; }
+  else { show("signup"); toast(t("noKakao")); speak(t("noKakao")); }
+}
+async function submitSignup(e){
+  if(e) e.preventDefault();
+  const name=$("#suName").value.trim(), phone=$("#suPhone").value.trim(), err=$("#suErr");
+  if(!name || phone.replace(/\D/g,"").length<8){ err.hidden=false; err.textContent=t("signupErr"); speak(t("signupErr")); (!name?$("#suName"):$("#suPhone")).focus(); return; }
+  err.hidden=true;
+  try{
+    const r=await fetch("/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone})});
+    if(r.ok){ const j=await r.json(); state.user={ name:j.name, phone:j.phone, provider:j.provider, admin:!!j.admin }; renderAuth(); afterLogin(); }
+    else { err.hidden=false; err.textContent=t("signupErr"); speak(t("signupErr")); }
+  }catch(e2){ err.hidden=false; err.textContent=t("signupErr"); }
+}
+function afterLogin(){ show("home"); toast(t("loginOkMsg")); speak(t("loginOkMsg")); }
+async function doLogout(){
+  try{ await fetch("/auth/logout",{method:"POST"}); }catch(e){}
+  state.user=null; renderAuth(); refreshReorder(); toast(t("loggedOutMsg")); speak(t("loggedOutMsg"));
+}
+function handleLoginRedirect(){
+  const q=new URLSearchParams(location.search), r=q.get("login"); if(!r) return;
+  if(r==="ok"){ setTimeout(()=>{ toast(t("loginOkMsg")); speak(t("loginOkMsg")); },300); }
+  else if(r==="fail"||r==="unconfigured"){ setTimeout(()=>{ show("signup"); toast(t("loginFailMsg")); speak(t("loginFailMsg")); },200); }
+  history.replaceState(null,"",location.pathname);
 }
 
 /* ============ 초기화 ============ */
@@ -832,6 +1101,8 @@ window.addEventListener("DOMContentLoaded", ()=>{
   state.language = browserLang();
   document.documentElement.lang=BCP47[state.language].split("-")[0];
   buildFlags(); applyUiText(); renderCart(); loadPaik(); loadKnownBrands();
+  if(window.speechSynthesis){ loadVoices(); try{ window.speechSynthesis.onvoiceschanged=loadVoices; }catch(e){} }
+  if(!IS_MOBILE){ ["homePhoto","menuPhoto","photo","reportFile"].forEach(id=>{ const el=document.getElementById(id); if(el) el.removeAttribute("capture"); }); }
 
   $$("[data-go]").forEach(b=>b.onclick=()=>{ const g=b.getAttribute("data-go");
     unlockTTS();
@@ -840,7 +1111,9 @@ window.addEventListener("DOMContentLoaded", ()=>{
     show(g); });
   $$("[data-back]").forEach(b=>b.onclick=()=>show(b.getAttribute("data-back")));
   $("#brandHome").onclick=()=>show("home");
-  $("#loginBtn").onclick=$("#signupBtn").onclick=()=>alert(t("loginSoon"));
+  $("#kakaoBtn").onclick=goKakao;
+  $("#noKakaoBtn").onclick=()=>show("signup");
+  $("#signupForm").addEventListener("submit", submitSignup);
   $("#fontToggle").onclick=toggleFont;
   $("#soundBtn").onclick=cycleSound;
   $("#gfStaff").onclick=()=>show("staff");
@@ -849,7 +1122,10 @@ window.addEventListener("DOMContentLoaded", ()=>{
   $("#send").onclick=submitText;
   $("#cam").onclick=()=>{ $("#homePhoto").value=""; $("#homePhoto").click(); };
   $("#homePhoto").onchange=(e)=>onHomePhoto(e.target.files[0]);
+  $("#menuPhoto").onchange=(e)=>onMenuPhoto(e.target.files[0]);
   $("#text").addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitText(); });
   initReport();
   show("home");
+  handleLoginRedirect();
+  checkAuth();
 });

@@ -37,12 +37,14 @@ public class AiService {
     private final ObjectProvider<OllamaChatModel> ollamaProvider;
     private final String provider;        // mindlogic | claude | ollama | mock
     private final List<String> models;    // 폴백 순서 (mindlogic 전용)
+    private final List<String> fastModels; // 좁혀가기/선택 판단용 빠른 모델 우선 체인
 
     public AiService(MindLogicClient mindLogic,
                      ObjectProvider<AnthropicChatModel> anthropicProvider,
                      ObjectProvider<OllamaChatModel> ollamaProvider,
                      @Value("${kiosk.ai.provider:mindlogic}") String provider,
-                     @Value("${kiosk.ai.models:${kiosk.ai.model:claude-sonnet-4-6}}") String models) {
+                     @Value("${kiosk.ai.models:${kiosk.ai.model:claude-sonnet-4-6}}") String models,
+                     @Value("${kiosk.ai.fast-models:}") String fastModels) {
         this.mindLogic = mindLogic;
         this.anthropicProvider = anthropicProvider;
         this.ollamaProvider = ollamaProvider;
@@ -55,6 +57,23 @@ public class AiService {
             }
         }
         if (this.models.isEmpty()) this.models.add("claude-sonnet-4-6");
+        this.fastModels = new ArrayList<>();
+        if (fastModels != null) {
+            for (String m : fastModels.split(",")) { String t = m.trim(); if (!t.isEmpty()) this.fastModels.add(t); }
+        }
+    }
+
+    /** 빠른 응답용(좁혀가기 질문·선택 판단). fast-models 를 먼저 시도, 실패하면 일반 체인으로 폴백. */
+    public String generateFast(String system, String user) {
+        if (!ready()) return null;
+        if ("mindlogic".equals(provider) && !fastModels.isEmpty()) {
+            for (String model : fastModels) {
+                MindLogicClient.Result r = mindLogic.generate(model, system, user);
+                if (r.content() != null) return r.content();
+                if (!r.reachable()) break;
+            }
+        }
+        return generate(system, user);
     }
 
     private ChatModel activeModel() {

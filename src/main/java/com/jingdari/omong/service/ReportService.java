@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jingdari.omong.dto.ReportResponse;
-import com.jingdari.omong.model.KioskSpec;
+import com.jingdari.omong.model.PendingReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,8 @@ import java.nio.file.Paths;
 
 /**
  * 제보 파이프라인(단계4): 키오스크 사진 → AI 비전이 메뉴/가격/위치/카테고리 추출
- *   → 상품영역 사각 크롭(순수 Java ImageIO) 저장 → 렌더러 스펙(JSON) 생성 → DB(KioskSpec) 저장.
+ *   → 상품영역 사각 크롭(순수 Java ImageIO) 저장 → 렌더러 스펙(JSON) 생성 → "검수 대기함"(PendingReport) 저장.
+ * ※ 바로 정식 등록(KioskSpec)하지 않는다. 관리자가 대시보드에서 승인해야 KioskSpec 으로 옮겨진다.
  * 누끼는 나중에 tools/nuki_rembg.py 로 _thumb.jpg → _cut.png 일괄 적용(사각 크롭 먼저).
  */
 @Service
@@ -30,19 +31,19 @@ public class ReportService {
     private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
     private final AiService ai;
-    private final KioskSpecRepository repo;
+    private final PendingReportRepository pending;
     private final ObjectMapper om;
     private final String uploadDir;
 
-    public ReportService(AiService ai, KioskSpecRepository repo, ObjectMapper om,
+    public ReportService(AiService ai, PendingReportRepository pending, ObjectMapper om,
                          @Value("${kiosk.upload-dir:./data/uploads}") String uploadDir) {
         this.ai = ai;
-        this.repo = repo;
+        this.pending = pending;
         this.om = om;
         this.uploadDir = uploadDir;
     }
 
-    public ReportResponse process(byte[] image, String mime, String storeName) {
+    public ReportResponse process(byte[] image, String mime, String storeName, String reporterName) {
         if (image == null || image.length == 0) return ReportResponse.fail("이미지가 없어요.");
         if (!ai.ready()) return ReportResponse.fail("지금은 사진 분석이 어려워요. 잠시 후 다시 시도해 주세요.");
 
@@ -121,10 +122,10 @@ public class ReportService {
             spec.put("cartLabel", "장바구니"); spec.put("togoLabel", "포장주문");
             spec.set("items", specItems);
 
-            // 5) DB 저장
-            repo.save(new KioskSpec(brandId, brandName, om.writeValueAsString(spec)));
-            log.info("제보 등록: {} ({}개 메뉴)", brandId, specItems.size());
-            return new ReportResponse(true, brandId, brandName, specItems.size(), "등록 완료");
+            // 5) 검수 대기함에 저장(정식 등록 X — 관리자 승인 후 KioskSpec 으로 이동)
+            pending.save(new PendingReport(brandId, brandName, om.writeValueAsString(spec), reporterName));
+            log.info("제보 접수(검수 대기): {} ({}개 메뉴)", brandId, specItems.size());
+            return new ReportResponse(true, brandId, brandName, specItems.size(), "제보가 접수됐어요. 관리자 확인 후 등록됩니다.");
         } catch (Exception e) {
             log.warn("제보 처리 실패: {}", e.getMessage());
             return ReportResponse.fail("처리 중 문제가 생겼어요. 다시 시도해 주세요.");

@@ -39,28 +39,17 @@ public class FunnelService {
                 .collect(Collectors.joining("\n"));
 
         String system = """
-                너는 키오스크 앞에서 손님을 돕는 침착하고 다정한 안내 도우미다.
-                손님은 키오스크가 낯선 어르신, 어린이, 외국인, 시각·인지에 불편이 있는 분일 수 있다.
-                목표: '한 번에 하나의 쉬운 선택'만 물어 손님이 스스로, 존중받으며 메뉴에 다가가게 한다.
-
-                [질문 설계 원칙]
-                1) 한 질문 = 한 결정. 후보를 2~3개(최대 3개)의 '겹치지 않는' 묶음으로 나눈다.
-                2) 감각·경험의 말을 쓴다: 맛(달다/안 달다/시원/뜨겁다), 종류(커피/커피 아닌 것), 양(보통/많이).
-                   전문용어·영어·브랜드 은어 금지: "ICED"→"시원한 거", "디카페인"→"덜 진한 거", "샷 추가"→"진하게".
-                3) 어린이도 이해하되, 유치하거나 대충하지 않는다. 짧고 품위 있는 존댓말.
-                   ("~드릴까요?", "어떤 게 더 좋으세요?") 반말·아기말투 금지.
-                4) 부정형·복잡한 조건문 피하고 긍정형 선택지로. 라벨은 2~7글자.
-                5) 가게 종류에 맞는 기준을 스스로 고른다
-                   (카페=맛/온도/크기, 햄버거=고기/치킨/새우·야채, 아이스크림=초코/과일/바닐라, 분식=국물/밥/튀김 등).
-                6) 각 선택지에 뜻이 통하는 이모지 1개. 후보 id는 정확히 한 묶음에만, 주어진 id만.
-                7) 남은 후보가 성격이 뚜렷이 갈릴 때 그 축을 먼저 물어 가장 빠르게 좁힌다.
-
-                좋은 예)  질문: "시원한 걸로 드릴까요, 뜨거운 걸로 드릴까요?"
-                          선택지: [{"label":"시원한 거","icon":"🧊"},{"label":"뜨거운 거","icon":"🔥"}]
-                나쁜 예)  "ICED/HOT 온도 옵션을 선택하십시오"(딱딱·어려움), "달달구리 줄까~?"(유치)
-
-                출력은 오직 JSON 하나. 설명·코드펜스 금지.
-                형식: {"question":"...","options":[{"label":"단 거","icon":"🍯","ids":["id1","id2"]}]}
+                너는 키오스크 앞 다정한 안내 도우미. 손님(어르신·아이·외국인 포함)이 '한 번에 하나의 쉬운 선택'으로 메뉴에 다가가게 한다.
+                규칙:
+                - 남은 후보를 겹치지 않는 2묶음(가끔 3묶음)으로 나누는 질문 1개.
+                - 성급히 한 번에 정하지 말 것. 뜻이 크게 갈리는 축부터 물어 단계적으로 좁힌다: 종류 → 맛 → 온도 → 크기 순.
+                - 후보가 3개 이상이면 한 선택지에 한 개만 남기지 말고 되도록 반씩 나눈다(계속 질문이 이어지게).
+                - 감각의 말만 쓴다: 커피/커피 아닌 것, 단 거/안 단 거, 시원/뜨겁, 보통/많이. 전문용어·영어·은어 금지(ICED→시원한 거, 샷추가→진하게).
+                - 짧고 품위 있는 존댓말. 라벨 2~7글자, 각 선택지에 어울리는 이모지 1개.
+                - 가게 종류에 맞는 기준을 고른다(카페=맛/온도/크기, 버거=고기/치킨/새우, 아이스크림=초코/과일/바닐라, 분식=국물/밥/튀김).
+                - id 는 정확히 한 묶음에만, 주어진 id 만 사용.
+                출력은 오직 JSON 하나(설명·코드펜스 금지):
+                {"question":"...","options":[{"label":"단 거","icon":"🍯","ids":["id1","id2"]}]}
                 """;
         String user = "언어: " + (req.language() == null ? "KO" : req.language())
                 + "\n가게: " + (req.brandName() == null ? "" : req.brandName())
@@ -68,7 +57,7 @@ public class FunnelService {
                 + "\n\n손님이 편하게 고르도록, 알바생처럼 다정하게 묻는 질문 하나를 위 JSON으로만 답해."
                 + " question 과 label 은 반드시 요청 언어로, 짧고 쉽게.";
 
-        String out = ai.generate(system, user);
+        String out = ai.generateFast(system, user);
         if (out == null || out.isBlank()) return FunnelResponse.empty();
 
         try {
@@ -103,6 +92,60 @@ public class FunnelService {
     }
 
     /**
+     * 질문 '계획'을 한 번에 생성한다(범용). 메뉴 목록만 보고 그 가게 성격을 파악해
+     * 큰 갈래 → 세부 → 맛/온도/크기 순의 질문 여러 개를 순서대로 만든다.
+     * 프론트가 이 계획을 즉시 걸어가므로(질문마다 AI 호출 없음) 빠르면서도 매장 맞춤이 된다.
+     */
+    public List<FunnelResponse> plan(FunnelRequest req) {
+        if (req == null || req.items() == null || req.items().size() <= 2) return List.of();
+        if (!ai.ready()) return List.of();
+        Set<String> validIds = req.items().stream().map(FunnelRequest.Item::id).collect(Collectors.toSet());
+        String menu = req.items().stream().map(it -> "- " + it.id() + " : " + it.name()).collect(Collectors.joining("\n"));
+        String system = """
+                너는 키오스크 주문 도우미의 '질문 설계자'다. 아래 메뉴 목록만 보고 이 가게의 성격을 스스로 파악해,
+                손님이 원하는 메뉴 하나까지 쉽고 정확하게 좁혀갈 '질문 계획'을 순서대로 만든다.
+                규칙:
+                - 3~6개의 질문을 큰 갈래 → 세부 → 맛/매운맛/온도/크기 순으로 배열.
+                - 첫 질문은 그 가게의 가장 큰 분류(예: 치킨/버거/사이드, 커피/커피 아닌 것, 밥/면/튀김).
+                - 각 질문의 선택지는 2~4개만(절대 5개 이상 금지), 겹치지 않는 묶음. 한 질문 안에서 각 id는 한 번만.
+                - 되도록 모든 메뉴 id가 어느 질문에선가 갈라지도록 한다.
+                - 쉬운 감각어·존댓말·이모지 1개. 라벨 2~7자. 전문용어·영어·은어 금지.
+                출력은 오직 JSON 하나(설명·코드펜스 금지):
+                {"questions":[{"question":"치킨 드실래요, 버거 드실래요?","options":[{"label":"치킨","icon":"🍗","ids":["id1"]},{"label":"버거","icon":"🍔","ids":["id2"]}]}]}
+                """;
+        String user = "가게: " + (req.brandName() == null ? "" : req.brandName())
+                + " (언어 " + (req.language() == null ? "KO" : req.language()) + ")\n"
+                + "메뉴(id : 이름):\n" + menu + "\n\n위 메뉴에 맞는 질문 계획을 JSON으로만.";
+        String out = ai.generateFast(system, user);
+        if (out == null || out.isBlank()) return List.of();
+        try {
+            JsonNode root = om.readTree(extractJson(out));
+            JsonNode qs = root.path("questions");
+            List<FunnelResponse> plan = new ArrayList<>();
+            if (qs.isArray()) {
+                for (JsonNode qn : qs) {
+                    String question = qn.path("question").asText(null);
+                    JsonNode opts = qn.path("options");
+                    if (question == null || question.isBlank() || !opts.isArray()) continue;
+                    List<FunnelOption> options = new ArrayList<>();
+                    for (JsonNode o : opts) {
+                        String label = o.path("label").asText(null);
+                        String icon = o.path("icon").asText("");
+                        List<String> ids = new ArrayList<>();
+                        for (JsonNode idn : o.path("ids")) { String id = idn.asText(); if (validIds.contains(id)) ids.add(id); }
+                        if (label != null && !label.isBlank() && !ids.isEmpty()) options.add(new FunnelOption(label, icon, ids));
+                    }
+                    if (options.size() >= 2) plan.add(new FunnelResponse(question, options));
+                }
+            }
+            return plan;
+        } catch (Exception e) {
+            log.warn("질문 계획 JSON 파싱 실패: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
      * 자유 발화에서 메뉴 하나를 골라낸다(실시간 음성). 두서없이 말해도 의도를 잡아 id 반환, 없으면 NONE.
      */
     public String pick(String text, List<FunnelRequest.Item> items) {
@@ -116,7 +159,7 @@ public class FunnelService {
                 출력은 JSON 하나만: {"id":"..."} (설명 금지)
                 """;
         String user = "메뉴(id : 이름):\n" + menu + "\n\n손님 말: " + text + "\n가장 맞는 id 하나를 JSON으로.";
-        String out = ai.generate(system, user);
+        String out = ai.generateFast(system, user);
         if (out == null) return "NONE";
         try {
             JsonNode n = om.readTree(extractJson(out));

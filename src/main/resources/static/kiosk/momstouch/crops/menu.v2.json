@@ -35,7 +35,8 @@
    "price": 6700,
    "r": 0,
    "c": 0,
-   "thumb": "/kiosk/momstouch/crops/menu/amazing_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/amazing_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "parkchajang",
@@ -43,7 +44,8 @@
    "price": 5700,
    "r": 0,
    "c": 1,
-   "thumb": "/kiosk/momstouch/crops/menu/parkchajang_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/parkchajang_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "jeonggwajang",
@@ -51,7 +53,8 @@
    "price": 5700,
    "r": 0,
    "c": 2,
-   "thumb": "/kiosk/momstouch/crops/menu/jeonggwajang_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/jeonggwajang_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "magicpung",
@@ -59,7 +62,8 @@
    "price": 6900,
    "r": 1,
    "c": 0,
-   "thumb": "/kiosk/momstouch/crops/menu/magicpung_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/magicpung_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "hudeok_shrimp",
@@ -67,7 +71,8 @@
    "price": 6700,
    "r": 1,
    "c": 1,
-   "thumb": "/kiosk/momstouch/crops/menu/hudeok_shrimp_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/hudeok_shrimp_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "hudeok_ssai",
@@ -75,7 +80,8 @@
    "price": 6400,
    "r": 1,
    "c": 2,
-   "thumb": "/kiosk/momstouch/crops/menu/hudeok_ssai_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/hudeok_ssai_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "chefs_k",
@@ -83,7 +89,8 @@
    "price": 7800,
    "r": 2,
    "c": 1,
-   "thumb": "/kiosk/momstouch/crops/menu/chefs_k_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/chefs_k_thumb.jpg",
+   "cat": "버거"
   },
   {
    "id": "chefs_bacon",
@@ -91,7 +98,224 @@
    "price": 8100,
    "r": 2,
    "c": 2,
-   "thumb": "/kiosk/momstouch/crops/menu/chefs_bacon_thumb.jpg"
+   "thumb": "/kiosk/momstouch/crops/menu/chefs_bacon_thumb.jpg",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_shrimp",
+   "name": "통새우버거",
+   "price": 2900,
+   "r": 3,
+   "c": 0,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_galbi",
+   "name": "통갈비치킨버거",
+   "price": 2900,
+   "r": 3,
+   "c": 1,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_bulgogi",
+   "name": "불고기버거",
+   "price": 3000,
+   "r": 3,
+   "c": 2,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_spicybulgogi",
+   "name": "스파이시불고기버거",
+   "price": 3200,
+   "r": 4,
+   "c": 0,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_deluxebulgogi",
+   "name": "디럭스불고기버거",
+   "price": 4000,
+   "r": 4,
+   "c": 1,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_cheesebacon",
+   "name": "치즈베이컨버거",
+   "price": 4500,
+   "r": 4,
+   "c": 2,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "burger_deepcheese",
+   "name": "딥치즈버거",
+   "price": 4000,
+   "r": 5,
+   "c": 0,
+   "emoji": "🍔",
+   "cat": "버거"
+  },
+  {
+   "id": "chk_fried",
+   "name": "후라이드치킨",
+   "price": 15000,
+   "r": 5,
+   "c": 1,
+   "emoji": "🍗",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_yangnyeom",
+   "name": "양념치킨",
+   "price": 16000,
+   "r": 5,
+   "c": 2,
+   "emoji": "🍗",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_soonsal",
+   "name": "순살치킨",
+   "price": 15000,
+   "r": 6,
+   "c": 0,
+   "emoji": "🍗",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_banban",
+   "name": "반반치킨",
+   "price": 16000,
+   "r": 6,
+   "c": 1,
+   "emoji": "🍗",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_bulsa",
+   "name": "불사치킨(매콤)",
+   "price": 17000,
+   "r": 6,
+   "c": 2,
+   "emoji": "🌶️",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_chipao",
+   "name": "치파오치킨",
+   "price": 17000,
+   "r": 7,
+   "c": 0,
+   "emoji": "🍗",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_garlic",
+   "name": "후레이크갈릭치킨",
+   "price": 17000,
+   "r": 7,
+   "c": 1,
+   "emoji": "🧄",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_gangjeong",
+   "name": "치킨강정(단짠)",
+   "price": 17000,
+   "r": 7,
+   "c": 2,
+   "emoji": "🍯",
+   "cat": "치킨"
+  },
+  {
+   "id": "chk_soonsalgang",
+   "name": "순살강정",
+   "price": 16000,
+   "r": 8,
+   "c": 0,
+   "emoji": "🍯",
+   "cat": "치킨"
+  },
+  {
+   "id": "side_potato",
+   "name": "치즈감자",
+   "price": 2500,
+   "r": 8,
+   "c": 1,
+   "emoji": "🍟",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_nugget",
+   "name": "할라피뇨너겟",
+   "price": 3000,
+   "r": 8,
+   "c": 2,
+   "emoji": "🌶️",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_mandu",
+   "name": "팝콘만두",
+   "price": 2500,
+   "r": 9,
+   "c": 0,
+   "emoji": "🥟",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_cheesestick",
+   "name": "치즈스틱",
+   "price": 1900,
+   "r": 9,
+   "c": 1,
+   "emoji": "🧀",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_tender",
+   "name": "텐더로인",
+   "price": 2000,
+   "r": 9,
+   "c": 2,
+   "emoji": "🍗",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_saladchk",
+   "name": "치킨샐러드",
+   "price": 2500,
+   "r": 10,
+   "c": 0,
+   "emoji": "🥗",
+   "cat": "사이드"
+  },
+  {
+   "id": "side_cajun",
+   "name": "케이준양념감자",
+   "price": 3000,
+   "r": 10,
+   "c": 1,
+   "emoji": "🍟",
+   "cat": "사이드"
+  },
+  {
+   "id": "drink_cola",
+   "name": "콜라",
+   "price": 2000,
+   "r": 10,
+   "c": 2,
+   "emoji": "🥤",
+   "cat": "음료"
   }
  ]
 }

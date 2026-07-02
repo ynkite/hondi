@@ -61,10 +61,22 @@ public class ApiController {
         return funnel.next(req);
     }
 
+    /** 좁혀가기 '질문 계획'을 한 번에 생성(범용, 매장 메뉴 기반). 프론트가 즉시 걸어감. */
+    @PostMapping(value = "/plan", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public java.util.List<FunnelResponse> plan(@RequestBody FunnelRequest req) {
+        return funnel.plan(req);
+    }
+
     /** 말하기 진입: 발화/입력 텍스트로 가게 판별(AI, 키워드 폴백). */
     @PostMapping(value = "/intent", consumes = MediaType.APPLICATION_JSON_VALUE)
     public RecognizeResponse intent(@RequestBody IntentRequest req) {
         return recognition.fromText(req.text());
+    }
+
+    /** 스마트 대화: 잡담도 자연스럽게 받되, 가게/메뉴를 추측해 확인 질문을 돌려준다. */
+    @PostMapping(value = "/converse", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ConverseResponse converse(@RequestBody IntentRequest req) {
+        return recognition.converse(req.text());
     }
 
     /** 실시간 음성: 두서없는 발화에서 메뉴 하나를 골라 id 반환(없으면 NONE). */
@@ -89,9 +101,10 @@ public class ApiController {
     /** 제보: 키오스크 사진 → AI 분석 → 상품 크롭 → DB에 새 키오스크 스펙 저장. */
     @PostMapping(value = "/report", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ReportResponse report(@RequestParam("image") MultipartFile image,
-                                 @RequestParam(value = "storeName", required = false) String storeName)
+                                 @RequestParam(value = "storeName", required = false) String storeName,
+                                 @RequestParam(value = "reporterName", required = false) String reporterName)
             throws IOException {
-        return report.process(image.getBytes(), image.getContentType(), storeName);
+        return report.process(image.getBytes(), image.getContentType(), storeName, reporterName);
     }
 
     /** 사진 진입: 업로드 사진으로 가게 판별(AI 비전). 미인식 시 brandId=NONE. */
