@@ -49,7 +49,7 @@ const I18N = {
         stepRecog: "메뉴·상호 인식", stepOrder: "주문서 자동 정리", stepStaff: "직원에게 보여주기",
         reportTitle: "사진으로 제보하기", reportHint: "메뉴판·간판·키오스크 사진을 올려주세요",
         reportBtn: "사진 올리기", reportDone: "제보되었습니다!", reportDoneSub: "덕분에 다음 사람이 더 쉽게 써요",
-        toHome: "홈으로", loginSoon: "로그인은 준비 중이에요", greetShort: "안녕하세요! 어느 키오스크를 도와드릴까요? 가게 이름을 말씀해 주세요 🙂", greetNote: "지금은 빽다방·맘스터치·맥도날드·메가커피를 도와드릴 수 있어요.", addMore: "더 담기", addMoreSub: "메뉴 더 고르기", finish: "완료하기", finishSub: "이대로 주문하기", alwaysListening: "상시로 듣고 있어요", micTap: "말하기", micStop: "듣기 멈춤", addedCart: "담았어요! 더 고르시겠어요?", directType: "직접 입력", payVoiceHint: "‘카드’·‘현금’이라고 말해도 돼요", orderEmpty: "아직 담은 주문이 없어요" },
+        toHome: "홈으로", loginSoon: "로그인은 준비 중이에요", greetShort: "안녕하세요! 어느 키오스크를 도와드릴까요? 가게 이름을 말씀해 주세요 🙂", greetNote: "지금은 빽다방·맘스터치·맥도날드·메가커피를 도와드릴 수 있어요.", addMore: "더 담기", addMoreSub: "메뉴 더 고르기", finish: "완료하기", finishSub: "이대로 주문하기", alwaysListening: "상시로 듣고 있어요", micTap: "말하기", micStop: "듣기 멈춤", addedCart: "담았어요! 더 고르시겠어요?", directType: "직접 입력", payVoiceHint: "‘카드’·‘현금’이라고 말해도 돼요", reportThanks: "제보해주셔서 감사합니다!", reportCrowd: "이 서비스는 크라우드소싱으로 만들어져 저작권 걱정 없이 안심하고 쓰실 수 있어요.", crowdDef: "크라우드소싱: 여러 사람이 조금씩 정보를 모아 함께 만드는 방식이에요.", pgKiosk: "키오스크", pgMenu: "메뉴판", pgSign: "간판", pgSoon: "사진 준비 중", recentOrder: "최근 주문 그대로 주문하기", ofTitle: "주문서", ofStore: "매장", ofNo: "주문번호", ofDate: "일시", ofItems: "품목", ofQty: "수량", ofAmount: "금액", ofTotal: "합계", ofPay: "결제수단", ofScan: "키오스크에 대면 이 주문서가 전달돼요", orderEmpty: "아직 담은 주문이 없어요" },
 
   EN: { title: "Kiosk Helper for Everyone", subtitle: "Photo, voice or buttons — easy for anyone",
         bigMode: "Bigger text & sound", speak: "Speak", listening: "Listening…",
@@ -99,7 +99,7 @@ const I18N = {
         stepRecog: "Read menu & name", stepOrder: "Auto-organize order", stepStaff: "Show to staff",
         reportTitle: "Report with a photo", reportHint: "Upload a menu, sign or kiosk photo",
         reportBtn: "Upload photo", reportDone: "Reported!", reportDoneSub: "Thanks — the next person will have it easier",
-        toHome: "Home", loginSoon: "Login is coming soon", greetShort: "Hi! Which kiosk can I help with? Please say the store name 🙂", greetNote: "For now I can help with Paik's, Mom's Touch, McDonald's and Mega Coffee.", addMore: "Add more", addMoreSub: "Pick another item", finish: "Done", finishSub: "Order like this", alwaysListening: "Always listening", micTap: "Speak", micStop: "Stop", addedCart: "Added! Anything else?", directType: "Type", payVoiceHint: "You can also say ‘card’ or ‘cash’", orderEmpty: "No order yet" },
+        toHome: "Home", loginSoon: "Login is coming soon", greetShort: "Hi! Which kiosk can I help with? Please say the store name 🙂", greetNote: "For now I can help with Paik's, Mom's Touch, McDonald's and Mega Coffee.", addMore: "Add more", addMoreSub: "Pick another item", finish: "Done", finishSub: "Order like this", alwaysListening: "Always listening", micTap: "Speak", micStop: "Stop", addedCart: "Added! Anything else?", directType: "Type", payVoiceHint: "You can also say ‘card’ or ‘cash’", reportThanks: "Thank you for your report!", reportCrowd: "This service is built with crowdsourcing, so there are no copyright worries — use it with peace of mind.", crowdDef: "Crowdsourcing: many people each add a little info to build it together.", pgKiosk: "Kiosk", pgMenu: "Menu board", pgSign: "Sign", pgSoon: "Photo coming soon", recentOrder: "Reorder my last order", ofTitle: "ORDER", ofStore: "Store", ofNo: "Order No.", ofDate: "Date", ofItems: "Item", ofQty: "Qty", ofAmount: "Amount", ofTotal: "Total", ofPay: "Payment", ofScan: "Scan at the kiosk to send this order", orderEmpty: "No order yet" },
 
   VI: { title: "Trợ lý Kiosk cho mọi người", subtitle: "Ảnh, giọng nói hoặc nút bấm — dễ cho ai cũng dùng",
         bigMode: "Chữ to & âm to", speak: "Nói", listening: "Đang nghe…",
@@ -149,7 +149,7 @@ const I18N = {
         stepRecog: "Đọc thực đơn & tên", stepOrder: "Tự sắp xếp đơn", stepStaff: "Cho nhân viên xem",
         reportTitle: "Báo tin bằng ảnh", reportHint: "Tải ảnh thực đơn, biển hoặc kiosk",
         reportBtn: "Tải ảnh lên", reportDone: "Đã báo tin!", reportDoneSub: "Cảm ơn — người sau sẽ dễ hơn",
-        toHome: "Trang chính", loginSoon: "Đăng nhập sắp có", greetShort: "Xin chào! Tôi giúp kiosk nào? Hãy nói tên cửa hàng 🙂", greetNote: "Hiện có thể giúp: Paik's, Mom's Touch, McDonald's, Mega Coffee.", addMore: "Thêm món", addMoreSub: "Chọn món khác", finish: "Xong", finishSub: "Đặt như vậy", alwaysListening: "Luôn lắng nghe", micTap: "Nói", micStop: "Dừng", addedCart: "Đã thêm! Bạn muốn gì nữa không?", directType: "Nhập", payVoiceHint: "Bạn cũng có thể nói ‘thẻ’ hoặc ‘tiền mặt’", orderEmpty: "Chưa có đơn" },
+        toHome: "Trang chính", loginSoon: "Đăng nhập sắp có", greetShort: "Xin chào! Tôi giúp kiosk nào? Hãy nói tên cửa hàng 🙂", greetNote: "Hiện có thể giúp: Paik's, Mom's Touch, McDonald's, Mega Coffee.", addMore: "Thêm món", addMoreSub: "Chọn món khác", finish: "Xong", finishSub: "Đặt như vậy", alwaysListening: "Luôn lắng nghe", micTap: "Nói", micStop: "Dừng", addedCart: "Đã thêm! Bạn muốn gì nữa không?", directType: "Nhập", payVoiceHint: "Bạn cũng có thể nói ‘thẻ’ hoặc ‘tiền mặt’", reportThanks: "Cảm ơn bạn đã báo tin!", reportCrowd: "Dịch vụ này được xây dựng bằng crowdsourcing nên không lo vấn đề bản quyền, hãy yên tâm dùng nhé.", crowdDef: "Crowdsourcing: nhiều người cùng góp một chút thông tin để tạo nên.", pgKiosk: "Kiosk", pgMenu: "Thực đơn", pgSign: "Biển hiệu", pgSoon: "Ảnh sắp có", recentOrder: "Đặt lại đơn gần đây", ofTitle: "ĐƠN HÀNG", ofStore: "Cửa hàng", ofNo: "Mã đơn", ofDate: "Thời gian", ofItems: "Món", ofQty: "SL", ofAmount: "Thành tiền", ofTotal: "Tổng", ofPay: "Thanh toán", ofScan: "Quét tại kiosk để gửi đơn này", orderEmpty: "Chưa có đơn" },
 
   ZH: { title: "人人可用的自助机助手", subtitle: "拍照·说话·按钮，人人都会用",
         bigMode: "大字·大声", speak: "说话", listening: "正在聆听…",
@@ -199,7 +199,7 @@ const I18N = {
         stepRecog: "识别菜单·店名", stepOrder: "自动整理订单", stepStaff: "给店员看",
         reportTitle: "拍照上报", reportHint: "上传菜单、招牌或自助机照片",
         reportBtn: "上传照片", reportDone: "已上报！", reportDoneSub: "谢谢，下一位会更方便",
-        toHome: "回主页", loginSoon: "登录功能即将上线", greetShort: "您好！帮您哪台自助机？请说店名 🙂", greetNote: "目前支持 Paik's、Mom's Touch、麦当劳、Mega Coffee。", addMore: "继续添加", addMoreSub: "再选一个", finish: "完成", finishSub: "就这样下单", alwaysListening: "一直在聆听", micTap: "说话", micStop: "停止", addedCart: "已加入！还要别的吗？", directType: "输入", payVoiceHint: "也可以说‘刷卡’或‘现金’", orderEmpty: "还没有订单" },
+        toHome: "回主页", loginSoon: "登录功能即将上线", greetShort: "您好！帮您哪台自助机？请说店名 🙂", greetNote: "目前支持 Paik's、Mom's Touch、麦当劳、Mega Coffee。", addMore: "继续添加", addMoreSub: "再选一个", finish: "完成", finishSub: "就这样下单", alwaysListening: "一直在聆听", micTap: "说话", micStop: "停止", addedCart: "已加入！还要别的吗？", directType: "输入", payVoiceHint: "也可以说‘刷卡’或‘现金’", reportThanks: "感谢您的上报！", reportCrowd: "本服务采用众包方式构建，无需担心版权问题，请放心使用。", crowdDef: "众包：许多人各自贡献一点信息，共同建立。", pgKiosk: "自助机", pgMenu: "菜单板", pgSign: "招牌", pgSoon: "照片准备中", recentOrder: "按最近订单再下单", ofTitle: "订单", ofStore: "门店", ofNo: "订单号", ofDate: "时间", ofItems: "品项", ofQty: "数量", ofAmount: "金额", ofTotal: "合计", ofPay: "支付方式", ofScan: "对准自助机即可发送此订单", orderEmpty: "还没有订单" },
 
   JA: { title: "みんなのキオスク案内", subtitle: "写真・声・ボタンで誰でも簡単",
         bigMode: "大きい文字・大きい音", speak: "話す", listening: "聞いています…",
@@ -249,7 +249,7 @@ const I18N = {
         stepRecog: "メニュー・店名の認識", stepOrder: "注文の自動整理", stepStaff: "店員に見せる",
         reportTitle: "写真で提報", reportHint: "メニュー・看板・キオスクの写真をどうぞ",
         reportBtn: "写真をあげる", reportDone: "提報しました！", reportDoneSub: "おかげで次の人が楽になります",
-        toHome: "ホームへ", loginSoon: "ログインは準備中です", greetShort: "こんにちは！どのキオスクをお手伝いしましょう？お店の名前を言ってください 🙂", greetNote: "今はペクタバン・マムズタッチ・マクドナルド・メガコーヒーに対応しています。", addMore: "追加する", addMoreSub: "もう一つ選ぶ", finish: "完了", finishSub: "このまま注文", alwaysListening: "常に聞いています", micTap: "話す", micStop: "停止", addedCart: "追加しました！他にもいかがですか？", directType: "入力", payVoiceHint: "「カード」「現金」と言ってもOK", orderEmpty: "まだ注文がありません" }
+        toHome: "ホームへ", loginSoon: "ログインは準備中です", greetShort: "こんにちは！どのキオスクをお手伝いしましょう？お店の名前を言ってください 🙂", greetNote: "今はペクタバン・マムズタッチ・マクドナルド・メガコーヒーに対応しています。", addMore: "追加する", addMoreSub: "もう一つ選ぶ", finish: "完了", finishSub: "このまま注文", alwaysListening: "常に聞いています", micTap: "話す", micStop: "停止", addedCart: "追加しました！他にもいかがですか？", directType: "入力", payVoiceHint: "「カード」「現金」と言ってもOK", reportThanks: "ご提報ありがとうございます！", reportCrowd: "このサービスはクラウドソーシングで作られており、著作権の心配なくご利用いただけます。", crowdDef: "クラウドソーシング：多くの人が少しずつ情報を出し合って一緒に作る方法です。", pgKiosk: "キオスク", pgMenu: "メニュー表", pgSign: "看板", pgSoon: "写真は準備中", recentOrder: "最近の注文をもう一度", ofTitle: "注文書", ofStore: "店舗", ofNo: "注文番号", ofDate: "日時", ofItems: "品目", ofQty: "数量", ofAmount: "金額", ofTotal: "合計", ofPay: "支払方法", ofScan: "キオスクにかざすとこの注文が送られます", orderEmpty: "まだ注文がありません" }
 };
 
 const BCP47 = { KO: "ko-KR", EN: "en-US", VI: "vi-VN", ZH: "zh-CN", JA: "ja-JP" };

@@ -2,18 +2,24 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F5851F">
   <title>오몽 · 제주 키오스크 도우미</title>
   <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
 </head>
 <body>
-  <div class="app">
+  <!-- 데스크톱에선 핸드폰처럼, 모바일에선 꽉 차게 -->
+  <div class="phone">
+    <div class="app" role="application" aria-label="오몽 키오스크 도우미">
+
+    <a class="skip-link" href="#stage">본문 바로가기</a>
 
     <!-- ===== 전역 상단바 ===== -->
     <header class="top" id="topbar">
       <div class="topline">
         <button class="brand" id="brandHome" aria-label="오몽 홈으로">
-          <svg class="logo" viewBox="0 0 44 44" aria-hidden="true">
+          <svg class="logo" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
             <circle cx="22" cy="24" r="16" fill="#F5851F"/>
             <circle cx="22" cy="24" r="16" fill="none" stroke="#E06E12" stroke-width="1.5"/>
             <ellipse cx="16" cy="18" rx="4.5" ry="2.6" fill="#FFFFFF" opacity=".35"/>
@@ -31,10 +37,14 @@
         </div>
       </div>
       <div class="toolrow">
-        <div class="flags" id="flags" role="group" aria-label="언어 선택"></div>
-        <div class="access" role="group" aria-label="접근성">
-          <button class="access-btn" id="fontToggle" aria-pressed="false">가<small>+</small> <span id="fontLbl"></span></button>
-          <button class="access-btn" id="soundBtn" aria-label="소리">🔊 <span id="soundLbl"></span></button>
+        <div class="flags" id="flags" role="group" aria-label="언어 선택 / Language"></div>
+        <div class="access" role="group" aria-label="화면 설정">
+          <button class="access-btn" id="fontToggle" aria-pressed="false">
+            <span class="ac-ic" aria-hidden="true">가</span><span id="fontLbl"></span>
+          </button>
+          <button class="access-btn" id="soundBtn" aria-pressed="true">
+            <span class="ac-ic" id="soundIcon" aria-hidden="true">🔊</span><span id="soundLbl"></span>
+          </button>
         </div>
       </div>
     </header>
@@ -42,106 +52,104 @@
     <!-- ===== 화면 컨테이너 ===== -->
     <main class="stage" id="stage">
 
-      <!-- 1) 홈: 제주 히어로 + 3버튼(말하기/사진찍기/제보) -->
-      <section class="screen active" id="scr-home" aria-label="메인">
+      <!-- 1) 홈 -->
+      <section class="screen active" id="scr-home" aria-labelledby="homeTitle">
         <div class="hero">
           <span class="hero-badge">🍊 <span id="heroBadge"></span></span>
           <h1 class="home-title" id="homeTitle"></h1>
           <p class="home-sub" id="homeSub"></p>
-          <svg class="jeju" viewBox="0 0 480 64" preserveAspectRatio="none" aria-hidden="true">
+          <svg class="jeju" viewBox="0 0 480 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
             <path d="M0 46 L120 22 L180 40 L240 10 L300 40 L360 26 L480 44 L480 64 L0 64 Z" fill="#F4EAD7"/>
             <path d="M0 54 L110 40 L200 52 L300 34 L390 50 L480 40 L480 64 L0 64 Z" fill="#EBDFC9" opacity=".8"/>
           </svg>
         </div>
         <div class="home-grid three">
           <button class="hbtn hbtn-speak wide" data-go="speak">
-            <span class="hicon">🎤</span>
+            <span class="hicon" aria-hidden="true">🎤</span>
             <span class="hlabel" data-k="btnSpeak"></span>
             <span class="hsub" data-k="btnSpeakSub"></span>
           </button>
           <button class="hbtn hbtn-photo" data-go="photo">
-            <span class="hicon">📷</span>
+            <span class="hicon" aria-hidden="true">📷</span>
             <span class="hlabel" data-k="btnPhoto"></span>
             <span class="hsub" data-k="btnPhotoSub"></span>
           </button>
           <button class="hbtn hbtn-report" data-go="report">
-            <span class="hicon">📣</span>
+            <span class="hicon" aria-hidden="true">📣</span>
             <span class="hlabel" data-k="btnReport"></span>
             <span class="hsub" data-k="btnReportSub"></span>
           </button>
         </div>
-        <p class="home-foot" id="homeFoot"></p>
-        <input id="homePhoto" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1">
+        <button class="reorder hidden" id="reorderBtn"></button>
+        <input id="homePhoto" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
       </section>
 
-      <!-- 2) 대화(AI 인식 + 주문 구성) -->
-      <section class="screen" id="scr-chat" aria-label="주문 구성">
+      <!-- 2) 주문 구성 (대화 기록 로그 + 답 버튼) -->
+      <section class="screen" id="scr-order" aria-labelledby="orderTitle">
         <div class="scrbar">
-          <button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button>
-          <span class="scrtitle" id="chatTitle"></span>
+          <button class="linkbtn" data-go="home" aria-label="홈으로">‹ <span data-k="home"></span></button>
+          <span class="scrtitle" id="orderTitle"></span>
         </div>
-        <div class="chat" id="chat" role="log" aria-live="polite" aria-atomic="false" aria-label="대화 내용"></div>
-        <section class="cartbar hidden" id="cartbar" aria-live="polite" aria-label="주문 내역">
+        <div class="orderbody" id="orderbody">
+          <div class="log" id="log" role="log" aria-live="polite" aria-atomic="false" aria-label="대화 내용"></div>
+        </div>
+        <section class="cartbar hidden" id="cartbar" aria-live="polite" aria-label="담은 주문">
           <div class="cart-head"><span id="cartTitle"></span><span class="cart-total" id="cartTotal"></span></div>
           <ul class="cart-list" id="cartList"></ul>
         </section>
-        <footer class="bar">
-          <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
-          <input id="text" type="text" autocomplete="off" aria-label="메시지 입력">
-          <button class="iconbtn mic" id="mic" aria-label="말하기">🎤</button>
-          <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
-          <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
+        <footer class="orderfoot">
+          <div class="listen-row">
+            <span class="listen-state" id="listenState" aria-live="polite">
+              <i class="lsdot" aria-hidden="true"></i><span id="listenLbl"></span>
+            </span>
+            <button class="micbtn" id="mic">
+              <span aria-hidden="true">🎤</span> <span id="micLbl"></span>
+            </button>
+          </div>
+          <div class="type-row">
+            <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
+            <input id="text" type="text" autocomplete="off" enterkeyhint="send" aria-label="직접 입력">
+            <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
+            <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
+          </div>
         </footer>
       </section>
 
-      <!-- 3) 매핑된 브랜드 → 3가지 선택 -->
-      <section class="screen" id="scr-mapped" aria-label="도움 방법 선택">
-        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
-        <div class="known"><span class="check">✓</span> <b id="knownBrand"></b></div>
-        <p class="center-sub" id="chooseHelp" style="text-align:left;margin-left:16px"></p>
-        <div class="choice-grid">
-          <button class="choice c-qr" data-go="qr">
-            <span class="cicon">📱</span>
-            <span class="ctext"><span class="clabel" data-k="optQR"></span><span class="csub" data-k="optQRSub"></span></span>
+      <!-- 3) 조작 가이드 (완료하기 → 바로 이 화면. 하단에 직원보여주기 / QR 2버튼) -->
+      <section class="screen" id="scr-guide" aria-labelledby="guideTitle">
+        <div class="scrbar">
+          <button class="linkbtn" data-back="order" aria-label="뒤로">‹ <span data-k="back"></span></button>
+          <span class="scrtitle" id="guideTitle"></span>
+          <span class="step-badge" id="guideStep"></span>
+        </div>
+        <div class="guide-hint" id="guideHint" role="status" aria-live="polite"></div>
+        <div class="guide-view">
+          <div class="kiosk" id="kiosk" aria-label="키오스크 화면"></div>
+        </div>
+        <div class="guide-foot">
+          <button class="gf-btn gf-staff" id="gfStaff">
+            <span aria-hidden="true">🧑‍🍳</span> <span data-k="staffShow"></span>
           </button>
-          <button class="choice c-guide" data-go="guide">
-            <span class="cicon">👉</span>
-            <span class="ctext"><span class="clabel" data-k="optGuide"></span><span class="csub" data-k="optGuideSub"></span></span>
-          </button>
-          <button class="choice c-staff" data-go="staff">
-            <span class="cicon">🧑‍🍳</span>
-            <span class="ctext"><span class="clabel" data-k="optStaff"></span><span class="csub" data-k="optStaffSub"></span></span>
+          <button class="gf-btn gf-qr" id="gfQr">
+            <span aria-hidden="true">📱</span> <span data-k="optQR"></span>
           </button>
         </div>
       </section>
 
-      <!-- 4) QR 출력 -->
-      <section class="screen" id="scr-qr" aria-label="QR 출력">
-        <div class="scrbar"><button class="linkbtn" data-back="mapped">‹ <span data-k="back"></span></button></div>
+      <!-- 4) QR -->
+      <section class="screen" id="scr-qr" aria-labelledby="qrTitle">
+        <div class="scrbar"><button class="linkbtn" data-back="guide" aria-label="뒤로">‹ <span data-k="back"></span></button></div>
         <div class="qr-wrap">
           <h2 class="center-title" id="qrTitle"></h2>
-          <div class="qr-box" id="qrBox" aria-label="QR 코드"></div>
+          <div class="qr-box" id="qrBox" role="img" aria-label="QR 코드"></div>
           <p class="center-sub" id="qrHint"></p>
           <div class="mini-order" id="qrOrder"></div>
         </div>
       </section>
 
-      <!-- 5) 조작 가이드 (실사진 크롭으로 키오스크 재구성 + 단계 강조) -->
-      <section class="screen" id="scr-guide" aria-label="조작 가이드">
-        <div class="scrbar">
-          <button class="linkbtn" data-back="mapped">‹ <span data-k="back"></span></button>
-          <span class="scrtitle" id="guideTitle"></span>
-          <span class="step-badge" id="guideStep"></span>
-        </div>
-        <div class="guide-hint" id="guideHint" aria-live="polite"></div>
-        <div class="guide-view">
-          <div class="kiosk" id="kiosk" aria-label="키오스크 화면"></div>
-        </div>
-      </section>
-
-      <!-- 6) 직원에게 보여주기 -->
-      <section class="screen" id="scr-staff" aria-label="직원에게 보여주기">
-        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+      <!-- 5) 직원에게 보여주기 (최종 주문서) -->
+      <section class="screen" id="scr-staff" aria-labelledby="staffTitle">
+        <div class="scrbar"><button class="linkbtn" data-back="guide" aria-label="뒤로">‹ <span data-k="back"></span></button></div>
         <div class="staff-card">
           <h2 class="center-title" id="staffTitle"></h2>
           <p class="center-sub" id="staffHint"></p>
@@ -149,46 +157,40 @@
         </div>
       </section>
 
-      <!-- 7) 미매핑 -->
-      <section class="screen" id="scr-unmapped" aria-label="처음 보는 키오스크">
-        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
-        <div class="known warn"><span class="check">?</span> <b id="unmappedTitle"></b></div>
-        <p class="center-sub" id="unmappedSub" style="text-align:left;margin-left:16px"></p>
-        <ol class="steps" id="unmappedSteps"></ol>
-        <div class="staff-order" id="unmappedOrder" style="margin:0 16px"></div>
-      </section>
-
-      <!-- 8) 제보하기 -->
-      <section class="screen" id="scr-report" aria-label="제보하기">
-        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+      <!-- 6) 제보하기 -->
+      <section class="screen" id="scr-report" aria-labelledby="reportTitle">
+        <div class="scrbar"><button class="linkbtn" data-go="home" aria-label="홈으로">‹ <span data-k="home"></span></button></div>
         <div class="report-wrap">
-          <span class="big-emoji">📣</span>
+          <span class="big-emoji" aria-hidden="true">📣</span>
           <h2 class="center-title" id="reportTitle"></h2>
           <p class="center-sub" id="reportHint"></p>
           <div class="report-preview" id="reportPreview"></div>
           <button class="primary" id="reportUpload"></button>
-          <input id="reportFile" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1">
+          <input id="reportFile" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1" aria-hidden="true">
         </div>
       </section>
 
-      <!-- 9) 제보 완료 -->
-      <section class="screen" id="scr-reportDone" aria-label="제보 완료">
+      <!-- 7) 제보 완료 -->
+      <section class="screen" id="scr-reportDone" aria-labelledby="reportDone">
         <div class="done-wrap">
-          <span class="done-check">✓</span>
+          <span class="done-check" aria-hidden="true">✓</span>
           <h2 class="center-title" id="reportDone"></h2>
           <p class="center-sub" id="reportDoneSub"></p>
+          <p class="footnote" id="crowdDef"></p>
           <button class="primary" data-go="home" id="toHomeBtn"></button>
         </div>
       </section>
 
     </main>
 
-    <!-- ===== 하단 상시: 직원에게 보여주기 ===== -->
-    <button class="safety" id="safetyBtn">🧑‍🍳 <span id="safetyLbl"></span></button>
+    <!-- 스크린리더 전용 라이브 안내 (음성 안내와 동기화) -->
+    <p class="sr-only" id="srLive" role="status" aria-live="polite"></p>
 
+    </div>
   </div>
 
   <script th:src="@{/js/i18n.js}" src="/js/i18n.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script th:src="@{/js/app.js}" src="/js/app.js"></script>
 </body>
 </html>
