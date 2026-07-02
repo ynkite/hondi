@@ -1,0 +1,64 @@
+{
+ "brandId": "megacoffee",
+ "brandName": "메가커피",
+ "screen": "menu",
+ "title": "커피 · 에스프레소",
+ "aspect": 0.7502,
+ "theme": {
+  "pageBg": "#e8ecf4",
+  "sidebarBg": "#f2f4f8",
+  "cardBg": "#ffffff",
+  "thumbBg": "#ffffff",
+  "accent": "#FFD400",
+  "ink": "#1d2c55",
+  "price": "#2B4A9B",
+  "tabActiveBg": "#FFD400"
+ },
+ "sidebar": [
+  "추천메뉴",
+  "커피",
+  "디카페인",
+  "음료",
+  "티",
+  "푸드"
+ ],
+ "activeCategory": "커피",
+ "cols": 2,
+ "rows": 2,
+ "cartLabel": "장바구니",
+ "togoLabel": "포장주문",
+ "items": [
+  {
+   "id": "megaricano",
+   "name": "(ICE)메가리카노",
+   "price": 3300,
+   "r": 0,
+   "c": 0,
+   "thumb": "/kiosk/megacoffee/crops/menu/megaricano_thumb.jpg"
+  },
+  {
+   "id": "americano",
+   "name": "(ICE)아메리카노",
+   "price": 2000,
+   "r": 0,
+   "c": 1,
+   "thumb": "/kiosk/megacoffee/crops/menu/americano_thumb.jpg"
+  },
+  {
+   "id": "heotgae",
+   "name": "(ICE)헛개리카노",
+   "price": 2400,
+   "r": 1,
+   "c": 0,
+   "thumb": "/kiosk/megacoffee/crops/menu/heotgae_thumb.jpg"
+  },
+  {
+   "id": "halmega",
+   "name": "(ICE)할메가커피",
+   "price": 2300,
+   "r": 1,
+   "c": 1,
+   "thumb": "/kiosk/megacoffee/crops/menu/halmega_thumb.jpg"
+  }
+ ]
+}

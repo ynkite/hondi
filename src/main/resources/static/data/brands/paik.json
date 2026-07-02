@@ -1,0 +1,400 @@
+{
+  "brandId": "paik",
+  "brandName": "빽다방",
+  "placeType": "ORDER",
+  "startScreenId": "dine",
+  "screens": [
+    {
+      "id": "dine",
+      "title": "어디서 드실건가요?",
+      "img": "/kiosk/paik/dine.jpg",
+      "hotspots": [
+        {
+          "id": "here",
+          "name": "매장",
+          "x": 11,
+          "y": 28,
+          "w": 38,
+          "h": 38,
+          "next": "menu_promo"
+        },
+        {
+          "id": "togo",
+          "name": "포장",
+          "x": 52,
+          "y": 28,
+          "w": 37,
+          "h": 38,
+          "next": "menu_promo"
+        }
+      ]
+    },
+    {
+      "id": "menu_promo",
+      "title": "점포행사/이벤트",
+      "img": "/kiosk/paik/menu_promo.jpg",
+      "nav": [
+        {
+          "id": "tab_promo",
+          "name": "점포행사/이벤트",
+          "x": 3,
+          "y": 4.5,
+          "w": 18,
+          "h": 6,
+          "next": "menu_promo"
+        },
+        {
+          "id": "tab_coffee",
+          "name": "커피",
+          "x": 3,
+          "y": 18,
+          "w": 18,
+          "h": 6.5,
+          "next": "menu_coffee"
+        },
+        {
+          "id": "cart",
+          "name": "장바구니",
+          "x": 70,
+          "y": 79,
+          "w": 15,
+          "h": 11,
+          "action": "cart"
+        }
+      ],
+      "grids": {
+        "A": {
+          "L": 22,
+          "R": 92,
+          "T": 6.5,
+          "B": 40,
+          "cols": 4,
+          "rows": 2
+        },
+        "B": {
+          "L": 22,
+          "R": 92,
+          "T": 49,
+          "B": 95,
+          "cols": 4,
+          "rows": 3
+        }
+      },
+      "items": [
+        {
+          "id": "set_salad_ame_hot",
+          "name": "[행사]빽올데이SET(오이없는 사라다빵+아메리카노HOT)",
+          "price": 4700,
+          "g": "A",
+          "r": 0,
+          "c": 0
+        },
+        {
+          "id": "set_salad_ame_ice",
+          "name": "[행사]빽올데이SET(오이없는 사라다빵+아메리카노ICED)",
+          "price": 5000,
+          "g": "A",
+          "r": 0,
+          "c": 1
+        },
+        {
+          "id": "set_hotdog_ame_hot",
+          "name": "[행사]빽올데이SET(빽그램 핫도그+아메리카노HOT)",
+          "price": 5500,
+          "g": "A",
+          "r": 0,
+          "c": 2
+        },
+        {
+          "id": "set_hotdog_ame_ice",
+          "name": "[행사]빽올데이SET(빽그램 핫도그+아메리카노ICED)",
+          "price": 5800,
+          "g": "A",
+          "r": 0,
+          "c": 3
+        },
+        {
+          "id": "set_croiss_ame_hot",
+          "name": "[행사]빽올데이SET(고메버터소금빵+아메리카노HOT)",
+          "price": 4000,
+          "g": "A",
+          "r": 1,
+          "c": 0
+        },
+        {
+          "id": "set_croiss_ame_ice",
+          "name": "[행사]빽올데이SET(고메버터소금빵+아메리카노ICED)",
+          "price": 4300,
+          "g": "A",
+          "r": 1,
+          "c": 1
+        },
+        {
+          "id": "new_mango_bing",
+          "name": "NEW 망고 컵빙수",
+          "price": 4200,
+          "g": "B",
+          "r": 0,
+          "c": 0
+        },
+        {
+          "id": "new_blue_bing",
+          "name": "NEW 블루베리 컵빙수",
+          "price": 4200,
+          "g": "B",
+          "r": 0,
+          "c": 1
+        },
+        {
+          "id": "new_choco_bing",
+          "name": "NEW 초코 컵빙수",
+          "price": 4200,
+          "g": "B",
+          "r": 0,
+          "c": 2
+        },
+        {
+          "id": "new_cheese_baum",
+          "name": "NEW 치즈홀릭 바움쿠헨",
+          "price": 2500,
+          "g": "B",
+          "r": 0,
+          "c": 3
+        },
+        {
+          "id": "new_custard_baum",
+          "name": "NEW 커스터드홀릭 바움쿠헨",
+          "price": 2500,
+          "g": "B",
+          "r": 1,
+          "c": 0
+        },
+        {
+          "id": "new_holic_set_hot",
+          "name": "NEW 홀릭 바움쿠헨 세트(HOT)",
+          "price": 4200,
+          "g": "B",
+          "r": 1,
+          "c": 1
+        },
+        {
+          "id": "new_holic_set_ice",
+          "name": "NEW 홀릭 바움쿠헨 세트(ICED)",
+          "price": 4500,
+          "g": "B",
+          "r": 1,
+          "c": 2
+        },
+        {
+          "id": "new_nyang_choco",
+          "name": "NEW 냥냥 춘배펀치 딸기스무디+인형키링(초코)",
+          "price": 13200,
+          "g": "B",
+          "r": 1,
+          "c": 3
+        },
+        {
+          "id": "new_nyang_str",
+          "name": "NEW 냥냥 춘배펀치 딸기스무디+변온컵(아이스전용)",
+          "price": 12700,
+          "g": "B",
+          "r": 2,
+          "c": 0
+        },
+        {
+          "id": "new_nyang_choco2",
+          "name": "NEW 냥냥 춘배펀치 초코스무디+인형키링(초코)",
+          "price": 13200,
+          "g": "B",
+          "r": 2,
+          "c": 1
+        },
+        {
+          "id": "new_nyang_str2",
+          "name": "NEW 냥냥 춘배펀치 초코스무디+변온컵(아이스전용)",
+          "price": 12700,
+          "g": "B",
+          "r": 2,
+          "c": 2
+        }
+      ]
+    },
+    {
+      "id": "menu_coffee",
+      "title": "커피",
+      "img": "/kiosk/paik/menu_coffee.jpg",
+      "nav": [
+        {
+          "id": "tab_promo",
+          "name": "점포행사/이벤트",
+          "x": 3,
+          "y": 4.5,
+          "w": 18,
+          "h": 6,
+          "next": "menu_promo"
+        },
+        {
+          "id": "tab_coffee",
+          "name": "커피",
+          "x": 3,
+          "y": 18,
+          "w": 18,
+          "h": 6.5,
+          "next": "menu_coffee"
+        },
+        {
+          "id": "cart",
+          "name": "장바구니",
+          "x": 70,
+          "y": 79,
+          "w": 15,
+          "h": 11,
+          "action": "cart"
+        }
+      ],
+      "grid": {
+        "L": 22,
+        "R": 86,
+        "T": 9,
+        "B": 94,
+        "cols": 4,
+        "rows": 5
+      },
+      "items": [
+        {
+          "id": "ame_ice_l",
+          "name": "아메리카노(ICED)",
+          "price": 3300,
+          "r": 0,
+          "c": 0
+        },
+        {
+          "id": "latte_ice",
+          "name": "카페라떼(ICED)",
+          "price": 4500,
+          "r": 0,
+          "c": 1
+        },
+        {
+          "id": "pistachio_latte",
+          "name": "피스타치오 생크림 카페라떼(ICED)",
+          "price": 4800,
+          "r": 0,
+          "c": 2
+        },
+        {
+          "id": "airfoam_ame",
+          "name": "에어폼 아메리카노(ICED)",
+          "price": 2200,
+          "r": 0,
+          "c": 3
+        },
+        {
+          "id": "double_espresso",
+          "name": "더블에스프레소",
+          "price": 1700,
+          "r": 1,
+          "c": 0
+        },
+        {
+          "id": "ame_hot",
+          "name": "아메리카노(HOT)",
+          "price": 1700,
+          "r": 1,
+          "c": 1
+        },
+        {
+          "id": "ame_ice",
+          "name": "아메리카노(ICED)",
+          "price": 2000,
+          "r": 1,
+          "c": 2
+        },
+        {
+          "id": "big_ame_ice",
+          "name": "빽사이즈 아메리카노(ICED)",
+          "price": 3300,
+          "r": 1,
+          "c": 3
+        },
+        {
+          "id": "honey_ame_hot",
+          "name": "꿀아메리카노(HOT)",
+          "price": 2700,
+          "r": 2,
+          "c": 0
+        },
+        {
+          "id": "honey_ame_ice",
+          "name": "꿀아메리카노(ICED)",
+          "price": 3000,
+          "r": 2,
+          "c": 1
+        },
+        {
+          "id": "hazel_ame_hot",
+          "name": "헤이즐넛 아메리카노(HOT)",
+          "price": 2200,
+          "r": 2,
+          "c": 2
+        },
+        {
+          "id": "hazel_ame_ice",
+          "name": "헤이즐넛아메리카노(ICED)",
+          "price": 2500,
+          "r": 2,
+          "c": 3
+        },
+        {
+          "id": "zero_peach",
+          "name": "제로슈거 납작복숭아(아,샷,추)",
+          "price": 3400,
+          "r": 3,
+          "c": 0
+        },
+        {
+          "id": "icetea_shot",
+          "name": "아이스티 샷추가(아,샷,추)",
+          "price": 3400,
+          "r": 3,
+          "c": 1
+        },
+        {
+          "id": "big_icetea",
+          "name": "빽사이즈 아이스티 샷추가(아,샷,추)",
+          "price": 4500,
+          "r": 3,
+          "c": 2
+        },
+        {
+          "id": "origin_hot",
+          "name": "원조커피(HOT)",
+          "price": 2500,
+          "r": 3,
+          "c": 3
+        },
+        {
+          "id": "origin_ice",
+          "name": "원조커피(ICED)",
+          "price": 2500,
+          "r": 4,
+          "c": 0
+        },
+        {
+          "id": "big_origin_ice",
+          "name": "빽사이즈 원조커피(ICED)",
+          "price": 3500,
+          "r": 4,
+          "c": 1
+        },
+        {
+          "id": "latte_hot",
+          "name": "카페라떼(HOT)",
+          "price": 3200,
+          "r": 4,
+          "c": 2
+        }
+      ]
+    }
+  ]
+}
