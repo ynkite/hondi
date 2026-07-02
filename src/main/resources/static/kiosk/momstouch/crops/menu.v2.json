@@ -1,0 +1,97 @@
+{
+ "brandId": "momstouch",
+ "brandName": "맘스터치",
+ "screen": "menu",
+ "title": "버거",
+ "aspect": 0.7502,
+ "theme": {
+  "pageBg": "#f7f3ea",
+  "sidebarBg": "#F7B815",
+  "cardBg": "#ffffff",
+  "thumbBg": "#fdfaf2",
+  "accent": "#F7B815",
+  "ink": "#2A2723",
+  "price": "#4a4436",
+  "tabActiveBg": "#ffffff"
+ },
+ "sidebar": [
+  "인기메뉴",
+  "버거",
+  "순살치킨",
+  "뼈치킨",
+  "음료",
+  "세트",
+  "사이드"
+ ],
+ "activeCategory": "버거",
+ "cols": 3,
+ "rows": 3,
+ "cartLabel": "장바구니",
+ "togoLabel": "포장주문",
+ "items": [
+  {
+   "id": "amazing",
+   "name": "어메이징매콤마요버거",
+   "price": 6700,
+   "r": 0,
+   "c": 0,
+   "thumb": "/kiosk/momstouch/crops/menu/amazing_thumb.jpg"
+  },
+  {
+   "id": "parkchajang",
+   "name": "박차장 싸이버거",
+   "price": 5700,
+   "r": 0,
+   "c": 1,
+   "thumb": "/kiosk/momstouch/crops/menu/parkchajang_thumb.jpg"
+  },
+  {
+   "id": "jeonggwajang",
+   "name": "정과장 싸이버거",
+   "price": 5700,
+   "r": 0,
+   "c": 2,
+   "thumb": "/kiosk/momstouch/crops/menu/jeonggwajang_thumb.jpg"
+  },
+  {
+   "id": "magicpung",
+   "name": "매직풍싸이버거",
+   "price": 6900,
+   "r": 1,
+   "c": 0,
+   "thumb": "/kiosk/momstouch/crops/menu/magicpung_thumb.jpg"
+  },
+  {
+   "id": "hudeok_shrimp",
+   "name": "후덕죽통새우버거",
+   "price": 6700,
+   "r": 1,
+   "c": 1,
+   "thumb": "/kiosk/momstouch/crops/menu/hudeok_shrimp_thumb.jpg"
+  },
+  {
+   "id": "hudeok_ssai",
+   "name": "후덕죽싸이버거",
+   "price": 6400,
+   "r": 1,
+   "c": 2,
+   "thumb": "/kiosk/momstouch/crops/menu/hudeok_ssai_thumb.jpg"
+  },
+  {
+   "id": "chefs_k",
+   "name": "셰프스 K 싸이버거",
+   "price": 7800,
+   "r": 2,
+   "c": 1,
+   "thumb": "/kiosk/momstouch/crops/menu/chefs_k_thumb.jpg"
+  },
+  {
+   "id": "chefs_bacon",
+   "name": "셰프스 베이컨싸이버거",
+   "price": 8100,
+   "r": 2,
+   "c": 2,
+   "thumb": "/kiosk/momstouch/crops/menu/chefs_bacon_thumb.jpg"
+  }
+ ]
+}

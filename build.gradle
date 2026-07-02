@@ -6,11 +6,11 @@ plugins {
 
 group = 'com.jingdari'
 version = '0.0.1-SNAPSHOT'
-description = 'hondi'
+description = 'omong'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -33,17 +33,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
     implementation 'com.fasterxml.jackson.core:jackson-databind'   // 버전은 Boot BOM이 관리
 
-    // --- AI: 지금은 Ollama(로컬)만 활성 ---
-    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+    // --- AI: Claude(Anthropic) 기본 + Ollama(로컬) 폴백용 ---
+    implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'   // Claude (기본)
+    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'      // 로컬 폴백/대체
 
-    // --- [추후] OpenAI / Claude 비교 테스트 후 더 잘하는 쪽 연결 ---
+    // --- [추후] OpenAI 비교 테스트용 ---
     // implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-    // implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'   // Claude
 
-    // --- [추후] RAG용 MariaDB 벡터 스토어. DB 세팅 후 주석 해제 ---
+    // --- DB: 제보된 키오스크 스펙/메뉴 저장 (MariaDB + JPA) ---
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+    // --- [추후] RAG용 MariaDB 벡터 스토어 ---
     // implementation 'org.springframework.ai:spring-ai-starter-vector-store-mariadb'
     // implementation 'org.springframework.ai:spring-ai-vector-store-advisor'
-    // runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

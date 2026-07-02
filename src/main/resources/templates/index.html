@@ -3,39 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>누구나 키오스크 도우미</title>
+  <title>오몽 · 제주 키오스크 도우미</title>
   <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
 </head>
 <body>
   <div class="app">
-    <header class="top">
-      <h1 class="title" id="title">누구나 키오스크 도우미</h1>
-      <p class="subtitle" id="subtitle">사진·말·버튼으로 누구나 쉽게</p>
-      <div class="row">
-        <div class="flags" id="flags" role="group" aria-label="언어 선택"><!-- 국기 탭 (JS) --></div>
-        <button class="bigbtn" id="bigBtn" aria-pressed="false">🔎 큰 글씨·큰 소리</button>
-        <button class="bigbtn" id="diagBtn" aria-label="마이크 진단">🔧 마이크 진단</button>
+
+    <!-- ===== 전역 상단바 ===== -->
+    <header class="top" id="topbar">
+      <div class="topline">
+        <button class="brand" id="brandHome" aria-label="오몽 홈으로">
+          <svg class="logo" viewBox="0 0 44 44" aria-hidden="true">
+            <circle cx="22" cy="24" r="16" fill="#F5851F"/>
+            <circle cx="22" cy="24" r="16" fill="none" stroke="#E06E12" stroke-width="1.5"/>
+            <ellipse cx="16" cy="18" rx="4.5" ry="2.6" fill="#FFFFFF" opacity=".35"/>
+            <path d="M22 9c3.5-3.2 8-3.6 10.5-2.2C31 10 27.5 12 23.4 11.6 24.8 10.4 26 9.6 27 9.2 24.8 9 23.2 9.4 22 9z" fill="#3E8E57"/>
+            <rect x="21" y="6" width="2" height="5" rx="1" fill="#7A5A2A"/>
+          </svg>
+          <span class="wm">
+            <span class="kr">오몽</span>
+            <span class="tag">제주 키오스크 도우미</span>
+          </span>
+        </button>
+        <div class="auth">
+          <button class="ghostbtn" id="loginBtn"></button>
+          <button class="ghostbtn" id="signupBtn"></button>
+        </div>
+      </div>
+      <div class="toolrow">
+        <div class="flags" id="flags" role="group" aria-label="언어 선택"></div>
+        <div class="access" role="group" aria-label="접근성">
+          <button class="access-btn" id="fontToggle" aria-pressed="false">가<small>+</small> <span id="fontLbl"></span></button>
+          <button class="access-btn" id="soundBtn" aria-label="소리">🔊 <span id="soundLbl"></span></button>
+        </div>
       </div>
     </header>
 
-    <!-- 대화: 스크린리더가 새 안내를 읽도록 live region -->
-    <main class="chat" id="chat" role="log" aria-live="polite" aria-atomic="false"
-          aria-label="대화 내용"><!-- 메시지/선택지/가이드 --></main>
+    <!-- ===== 화면 컨테이너 ===== -->
+    <main class="stage" id="stage">
 
-    <!-- 장바구니 (담은 게 있을 때만 표시) -->
-    <section class="cartbar hidden" id="cartbar" aria-live="polite" aria-label="주문 내역">
-      <div class="cart-head"><span id="cartTitle">주문 내역</span>
-        <span class="cart-total" id="cartTotal"></span></div>
-      <ul class="cart-list" id="cartList"></ul>
-    </section>
+      <!-- 1) 홈: 제주 히어로 + 3버튼(말하기/사진찍기/제보) -->
+      <section class="screen active" id="scr-home" aria-label="메인">
+        <div class="hero">
+          <span class="hero-badge">🍊 <span id="heroBadge"></span></span>
+          <h1 class="home-title" id="homeTitle"></h1>
+          <p class="home-sub" id="homeSub"></p>
+          <svg class="jeju" viewBox="0 0 480 64" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 46 L120 22 L180 40 L240 10 L300 40 L360 26 L480 44 L480 64 L0 64 Z" fill="#F4EAD7"/>
+            <path d="M0 54 L110 40 L200 52 L300 34 L390 50 L480 40 L480 64 L0 64 Z" fill="#EBDFC9" opacity=".8"/>
+          </svg>
+        </div>
+        <div class="home-grid three">
+          <button class="hbtn hbtn-speak wide" data-go="speak">
+            <span class="hicon">🎤</span>
+            <span class="hlabel" data-k="btnSpeak"></span>
+            <span class="hsub" data-k="btnSpeakSub"></span>
+          </button>
+          <button class="hbtn hbtn-photo" data-go="photo">
+            <span class="hicon">📷</span>
+            <span class="hlabel" data-k="btnPhoto"></span>
+            <span class="hsub" data-k="btnPhotoSub"></span>
+          </button>
+          <button class="hbtn hbtn-report" data-go="report">
+            <span class="hicon">📣</span>
+            <span class="hlabel" data-k="btnReport"></span>
+            <span class="hsub" data-k="btnReportSub"></span>
+          </button>
+        </div>
+        <p class="home-foot" id="homeFoot"></p>
+        <input id="homePhoto" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1">
+      </section>
 
-    <footer class="bar">
-      <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
-      <input id="text" type="text" placeholder="여기에 입력하세요" autocomplete="off" aria-label="메시지 입력">
-      <button class="iconbtn mic" id="mic" aria-label="말하기">🎤</button>
-      <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
-      <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
-    </footer>
+      <!-- 2) 대화(AI 인식 + 주문 구성) -->
+      <section class="screen" id="scr-chat" aria-label="주문 구성">
+        <div class="scrbar">
+          <button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button>
+          <span class="scrtitle" id="chatTitle"></span>
+        </div>
+        <div class="chat" id="chat" role="log" aria-live="polite" aria-atomic="false" aria-label="대화 내용"></div>
+        <section class="cartbar hidden" id="cartbar" aria-live="polite" aria-label="주문 내역">
+          <div class="cart-head"><span id="cartTitle"></span><span class="cart-total" id="cartTotal"></span></div>
+          <ul class="cart-list" id="cartList"></ul>
+        </section>
+        <footer class="bar">
+          <button class="iconbtn cam" id="cam" aria-label="사진 찍기">📷</button>
+          <input id="text" type="text" autocomplete="off" aria-label="메시지 입력">
+          <button class="iconbtn mic" id="mic" aria-label="말하기">🎤</button>
+          <button class="iconbtn send" id="send" aria-label="보내기">➤</button>
+          <input id="photo" type="file" accept="image/*" capture="environment" class="hidden" aria-hidden="true" tabindex="-1">
+        </footer>
+      </section>
+
+      <!-- 3) 매핑된 브랜드 → 3가지 선택 -->
+      <section class="screen" id="scr-mapped" aria-label="도움 방법 선택">
+        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+        <div class="known"><span class="check">✓</span> <b id="knownBrand"></b></div>
+        <p class="center-sub" id="chooseHelp" style="text-align:left;margin-left:16px"></p>
+        <div class="choice-grid">
+          <button class="choice c-qr" data-go="qr">
+            <span class="cicon">📱</span>
+            <span class="ctext"><span class="clabel" data-k="optQR"></span><span class="csub" data-k="optQRSub"></span></span>
+          </button>
+          <button class="choice c-guide" data-go="guide">
+            <span class="cicon">👉</span>
+            <span class="ctext"><span class="clabel" data-k="optGuide"></span><span class="csub" data-k="optGuideSub"></span></span>
+          </button>
+          <button class="choice c-staff" data-go="staff">
+            <span class="cicon">🧑‍🍳</span>
+            <span class="ctext"><span class="clabel" data-k="optStaff"></span><span class="csub" data-k="optStaffSub"></span></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 4) QR 출력 -->
+      <section class="screen" id="scr-qr" aria-label="QR 출력">
+        <div class="scrbar"><button class="linkbtn" data-back="mapped">‹ <span data-k="back"></span></button></div>
+        <div class="qr-wrap">
+          <h2 class="center-title" id="qrTitle"></h2>
+          <div class="qr-box" id="qrBox" aria-label="QR 코드"></div>
+          <p class="center-sub" id="qrHint"></p>
+          <div class="mini-order" id="qrOrder"></div>
+        </div>
+      </section>
+
+      <!-- 5) 조작 가이드 (실사진 크롭으로 키오스크 재구성 + 단계 강조) -->
+      <section class="screen" id="scr-guide" aria-label="조작 가이드">
+        <div class="scrbar">
+          <button class="linkbtn" data-back="mapped">‹ <span data-k="back"></span></button>
+          <span class="scrtitle" id="guideTitle"></span>
+          <span class="step-badge" id="guideStep"></span>
+        </div>
+        <div class="guide-hint" id="guideHint" aria-live="polite"></div>
+        <div class="guide-view">
+          <div class="kiosk" id="kiosk" aria-label="키오스크 화면"></div>
+        </div>
+      </section>
+
+      <!-- 6) 직원에게 보여주기 -->
+      <section class="screen" id="scr-staff" aria-label="직원에게 보여주기">
+        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+        <div class="staff-card">
+          <h2 class="center-title" id="staffTitle"></h2>
+          <p class="center-sub" id="staffHint"></p>
+          <div class="staff-order" id="staffOrder"></div>
+        </div>
+      </section>
+
+      <!-- 7) 미매핑 -->
+      <section class="screen" id="scr-unmapped" aria-label="처음 보는 키오스크">
+        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+        <div class="known warn"><span class="check">?</span> <b id="unmappedTitle"></b></div>
+        <p class="center-sub" id="unmappedSub" style="text-align:left;margin-left:16px"></p>
+        <ol class="steps" id="unmappedSteps"></ol>
+        <div class="staff-order" id="unmappedOrder" style="margin:0 16px"></div>
+      </section>
+
+      <!-- 8) 제보하기 -->
+      <section class="screen" id="scr-report" aria-label="제보하기">
+        <div class="scrbar"><button class="linkbtn" data-go="home">‹ <span data-k="home"></span></button></div>
+        <div class="report-wrap">
+          <span class="big-emoji">📣</span>
+          <h2 class="center-title" id="reportTitle"></h2>
+          <p class="center-sub" id="reportHint"></p>
+          <div class="report-preview" id="reportPreview"></div>
+          <button class="primary" id="reportUpload"></button>
+          <input id="reportFile" type="file" accept="image/*" capture="environment" class="hidden" tabindex="-1">
+        </div>
+      </section>
+
+      <!-- 9) 제보 완료 -->
+      <section class="screen" id="scr-reportDone" aria-label="제보 완료">
+        <div class="done-wrap">
+          <span class="done-check">✓</span>
+          <h2 class="center-title" id="reportDone"></h2>
+          <p class="center-sub" id="reportDoneSub"></p>
+          <button class="primary" data-go="home" id="toHomeBtn"></button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== 하단 상시: 직원에게 보여주기 ===== -->
+    <button class="safety" id="safetyBtn">🧑‍🍳 <span id="safetyLbl"></span></button>
+
   </div>
 
   <script th:src="@{/js/i18n.js}" src="/js/i18n.js"></script>

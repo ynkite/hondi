@@ -1,0 +1,123 @@
+{
+ "brandId": "mcdonalds",
+ "brandName": "맥도날드",
+ "screen": "menu",
+ "title": "버거",
+ "aspect": 0.7502,
+ "theme": {
+  "pageBg": "#f4f2ee",
+  "sidebarBg": "#ffffff",
+  "cardBg": "#f8f6f2",
+  "thumbBg": "#f8f6f2",
+  "accent": "#FFC300",
+  "ink": "#292218",
+  "price": "#4a4436",
+  "tabActiveBg": "#FFE28A"
+ },
+ "sidebar": [
+  "홈",
+  "추천메뉴",
+  "버거",
+  "해피 스낵",
+  "사이드",
+  "커피",
+  "디저트",
+  "음료",
+  "해피밀"
+ ],
+ "activeCategory": "버거",
+ "cols": 3,
+ "rows": 4,
+ "cartLabel": "장바구니",
+ "togoLabel": "포장주문",
+ "items": [
+  {
+   "id": "macncheese_beef",
+   "name": "맥앤치즈 더블 비프",
+   "price": 8400,
+   "r": 0,
+   "c": 0,
+   "thumb": "/kiosk/mcdonalds/crops/menu/macncheese_beef_thumb.jpg"
+  },
+  {
+   "id": "macncheese_chicken",
+   "name": "맥앤치즈 스파이시 치킨",
+   "price": 8300,
+   "r": 0,
+   "c": 1,
+   "thumb": "/kiosk/mcdonalds/crops/menu/macncheese_chicken_thumb.jpg"
+  },
+  {
+   "id": "dbl_quarter",
+   "name": "더블 쿼터파운더 치즈",
+   "price": 8000,
+   "r": 1,
+   "c": 0,
+   "thumb": "/kiosk/mcdonalds/crops/menu/dbl_quarter_thumb.jpg"
+  },
+  {
+   "id": "dbl_shanghai",
+   "name": "더블 맥스파이시 상하이 버거",
+   "price": 9600,
+   "r": 1,
+   "c": 1,
+   "thumb": "/kiosk/mcdonalds/crops/menu/dbl_shanghai_thumb.jpg"
+  },
+  {
+   "id": "mccrispy_deluxe",
+   "name": "맥크리스피 치킨 디럭스",
+   "price": 7100,
+   "r": 1,
+   "c": 2,
+   "thumb": "/kiosk/mcdonalds/crops/menu/mccrispy_deluxe_thumb.jpg"
+  },
+  {
+   "id": "mccrispy_classic",
+   "name": "맥크리스피 치킨 클래식",
+   "price": 6200,
+   "r": 2,
+   "c": 0,
+   "thumb": "/kiosk/mcdonalds/crops/menu/mccrispy_classic_thumb.jpg"
+  },
+  {
+   "id": "bigmac",
+   "name": "빅맥",
+   "price": 6000,
+   "r": 2,
+   "c": 1,
+   "thumb": "/kiosk/mcdonalds/crops/menu/bigmac_thumb.jpg"
+  },
+  {
+   "id": "dbl_bulgogi",
+   "name": "더블 불고기 버거",
+   "price": 5000,
+   "r": 2,
+   "c": 2,
+   "thumb": "/kiosk/mcdonalds/crops/menu/dbl_bulgogi_thumb.jpg"
+  },
+  {
+   "id": "quarter_cheese",
+   "name": "쿼터파운더 치즈",
+   "price": 6200,
+   "r": 3,
+   "c": 0,
+   "thumb": "/kiosk/mcdonalds/crops/menu/quarter_cheese_thumb.jpg"
+  },
+  {
+   "id": "shanghai",
+   "name": "맥스파이시 상하이 버거",
+   "price": 6200,
+   "r": 3,
+   "c": 1,
+   "thumb": "/kiosk/mcdonalds/crops/menu/shanghai_thumb.jpg"
+  },
+  {
+   "id": "tomato_beef",
+   "name": "토마토 치즈 비프 버거",
+   "price": 4300,
+   "r": 3,
+   "c": 2,
+   "thumb": "/kiosk/mcdonalds/crops/menu/tomato_beef_thumb.jpg"
+  }
+ ]
+}

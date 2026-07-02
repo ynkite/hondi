@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>키오스크 재현 화면</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+      background:#e9edf3;display:flex;justify-content:center}
+    .wrap{width:100%;max-width:520px;min-height:100vh;background:#fff;display:flex;flex-direction:column;position:relative}
+    .guide{background:#e2452f;color:#fff;padding:14px 16px;font-weight:800;font-size:1.15rem;
+      display:flex;align-items:center;gap:10px}
+    .guide .n{background:#fff;color:#e2452f;border-radius:50%;width:30px;height:30px;flex:0 0 auto;
+      display:flex;align-items:center;justify-content:center}
+    .guide.hidden{display:none}
+    .stage{position:relative;display:block;line-height:0}
+    .stage img{width:100%;display:block}
+    .spot{position:absolute;border-radius:12px;cursor:pointer;background:transparent}
+    .spot:hover{background:rgba(58,63,122,.12);outline:2px solid rgba(58,63,122,.4)}
+    .spot.nav{z-index:5}
+    .spot.hl{outline:5px solid #e2452f;background:rgba(226,69,47,.08);
+      box-shadow:0 0 0 4px rgba(226,69,47,.35);animation:pulse 1.1s infinite;z-index:6}
+    .spot.hl .tag{position:absolute;top:-16px;left:-6px;background:#e2452f;color:#fff;
+      border-radius:999px;font-size:.8rem;font-weight:800;padding:3px 10px;white-space:nowrap;line-height:1.2}
+    @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(226,69,47,.12)}}
+    .badge{position:absolute;z-index:7;background:#e2452f;color:#fff;border-radius:999px;
+      min-width:22px;height:22px;padding:0 6px;font-size:.8rem;font-weight:800;line-height:22px;
+      text-align:center;transform:translate(50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .foot{padding:12px 14px;color:#667;font-size:.82rem;border-top:1px solid #eee;text-align:center}
+    .foot b{color:#3a3f7a}
+    /* 담김 토스트 */
+    .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);
+      background:#222;color:#fff;padding:12px 18px;border-radius:999px;font-weight:700;font-size:.95rem;
+      opacity:0;pointer-events:none;transition:.25s;z-index:30;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* 오버레이(장바구니/완료) */
+    .sheet{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;
+      align-items:flex-end;justify-content:center;z-index:20}
+    .sheet.show{display:flex}
+    .card{width:100%;max-width:520px;background:#fff;border-radius:20px 20px 0 0;
+      max-height:82%;display:flex;flex-direction:column;animation:up .28s ease}
+    @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .card h2{margin:0;padding:18px 20px 12px;font-size:1.25rem;border-bottom:1px solid #f0f0f0}
+    .cart-list{overflow:auto;padding:6px 0;flex:1}
+    .row{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #f6f6f6}
+    .row .nm{flex:1;font-weight:600;font-size:.95rem;line-height:1.3}
+    .row .pr{font-weight:800;color:#3a3f7a;white-space:nowrap}
+    .row .del{border:none;background:#f2f3f7;color:#889;border-radius:8px;width:30px;height:30px;
+      font-size:1.1rem;cursor:pointer;flex:0 0 auto}
+    .empty{padding:40px 20px;text-align:center;color:#99a}
+    .sum{padding:14px 20px;display:flex;justify-content:space-between;font-size:1.05rem;
+      border-top:1px solid #eee;font-weight:700}
+    .sum b{color:#e2452f;font-size:1.2rem}
+    .acts{display:flex;gap:10px;padding:12px 16px 18px}
+    .btn{flex:1;border:none;border-radius:14px;padding:16px;font-size:1.05rem;font-weight:800;cursor:pointer}
+    .btn.ghost{background:#f2f3f7;color:#556}
+    .btn.pay{background:#e2452f;color:#fff}
+    .done{text-align:center;padding:34px 24px 8px}
+    .done .chk{width:72px;height:72px;border-radius:50%;background:#20a161;color:#fff;
+      font-size:2.4rem;line-height:72px;margin:0 auto 14px}
+    .done h2{border:none;padding:0 0 6px;font-size:1.4rem}
+    .done p{margin:4px 0;color:#667}
+    .done .big{font-size:1.4rem;color:#e2452f;font-weight:800;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="guide hidden" id="guide"><span class="n">1</span><span id="guideText"></span></div>
+    <div class="stage" id="stage"></div>
+    <div class="foot" id="foot">실제 키오스크 화면 재현 · 강조된 <b>빨간 칸</b>을 누르세요</div>
+
+    <!-- 장바구니 시트 -->
+    <div class="sheet" id="cartSheet">
+      <div class="card">
+        <h2>장바구니</h2>
+        <div class="cart-list" id="cartList"></div>
+        <div class="sum">합계 <b id="cartTotal">0원</b></div>
+        <div class="acts">
+          <button class="btn ghost" id="closeCart">계속 담기</button>
+          <button class="btn pay" id="payBtn">결제하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 주문완료 시트 -->
+    <div class="sheet" id="doneSheet">
+      <div class="card">
+        <div class="done">
+          <div class="chk">✓</div>
+          <h2>주문이 완료됐어요</h2>
+          <p id="doneItems"></p>
+          <p>주문번호 <b id="doneNo"></b></p>
+          <div class="big" id="donePay"></div>
+          <p style="margin-top:14px;font-size:.9rem">잠시만 기다려 주세요. 준비되면 번호로 불러드려요.</p>
+        </div>
+        <div class="acts">
+          <button class="btn pay" id="resetBtn">처음으로</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const p = new URLSearchParams(location.search);
+const brandId = p.get("brand") || "paik";
+const hl = (p.get("highlight") || "").split(":");   // screen:itemId
+let data = null, curScreen = null;
+let cart = [];
+const $ = s => document.querySelector(s);
+const won = n => n.toLocaleString() + "원";
+
+async function load(){
+  const res = await fetch("/data/brands/" + brandId + ".json");
+  data = await res.json();
+  render(data.startScreenId);
+}
+const screen = id => data.screens.find(s => s.id === id);
+
+// 화면의 모든 클릭영역: nav(사이드바/장바구니) + grid/grids 아이템
+function boxesFor(s){
+  const out = [];
+  (s.nav || []).forEach(n => out.push({ ...n, _nav:true, box:[n.x,n.y,n.w,n.h] }));
+  if(s.hotspots) s.hotspots.forEach(h => out.push({ ...h, box:[h.x,h.y,h.w,h.h] }));
+  (s.items || []).forEach(it => {
+    if(it.x != null){ out.push({ ...it, box:[it.x,it.y,it.w,it.h] }); return; }
+    const g = (s.grids && it.g) ? s.grids[it.g] : s.grid;
+    if(!g) return;
+    const cw = (g.R-g.L)/g.cols, ch = (g.B-g.T)/g.rows;
+    out.push({ ...it, box:[g.L+cw*it.c, g.T+ch*it.r, cw, ch] });
+  });
+  return out;
+}
+
+function render(screenId){
+  curScreen = screenId;
+  const s = screen(screenId);
+  const stage = $("#stage"); stage.innerHTML = "";
+  const img = document.createElement("img"); img.src = s.img; img.alt = s.title || brandId;
+  stage.appendChild(img);
+
+  const targetId = (hl[0]===screenId) ? hl[1] : null;
+  boxesFor(s).forEach(b => {
+    const d = document.createElement("div");
+    d.className = "spot" + (b._nav ? " nav" : "");
+    const [x,y,w,h] = b.box;
+    d.style.left=x+"%"; d.style.top=y+"%"; d.style.width=w+"%"; d.style.height=h+"%";
+    d.title = b.name + (b.price!=null ? " "+won(b.price) : "");
+    if(b.id===targetId){
+      d.classList.add("hl");
+      const t=document.createElement("span"); t.className="tag"; t.textContent="여기! "+b.name;
+      d.appendChild(t);
+    }
+    d.onclick = () => {
+      if(b.action === "cart") return openCart();
+      if(b.next) return render(b.next);
+      if(b.price != null) addToCart(b);
+    };
+    stage.appendChild(d);
+    // 장바구니 버튼 위 담긴 개수 배지
+    if(b.action === "cart" && cart.length){
+      const bd = document.createElement("div"); bd.className="badge";
+      bd.style.left=(x+w)+"%"; bd.style.top=y+"%";
+      bd.textContent = cart.reduce((a,c)=>a+c.qty,0);
+      stage.appendChild(bd);
+    }
+  });
+
+  // 가이드 배너
+  const g = $("#guide"), gt = $("#guideText");
+  if(targetId){
+    const b = boxesFor(s).find(x=>x.id===targetId);
+    gt.textContent = (b ? b.name : "") + " 를 누르세요";
+    g.classList.remove("hidden");
+  } else g.classList.add("hidden");
+}
+
+/* ---- 장바구니 ---- */
+function addToCart(b){
+  const ex = cart.find(c => c.id === b.id);
+  if(ex) ex.qty++; else cart.push({ id:b.id, name:b.name, price:b.price, qty:1 });
+  toast(b.name + " 담았어요");
+  render(curScreen);
+}
+function removeFromCart(id){ cart = cart.filter(c => c.id !== id); drawCart(); render(curScreen); }
+function cartTotal(){ return cart.reduce((a,c)=>a+c.price*c.qty, 0); }
+
+function drawCart(){
+  const list = $("#cartList");
+  if(!cart.length){ list.innerHTML = '<div class="empty">담긴 메뉴가 없어요</div>'; }
+  else {
+    list.innerHTML = "";
+    cart.forEach(c => {
+      const row = document.createElement("div"); row.className="row";
+      row.innerHTML = '<div class="nm">'+c.name+' <span style="color:#889">x'+c.qty+'</span></div>'
+        + '<div class="pr">'+won(c.price*c.qty)+'</div>';
+      const del = document.createElement("button"); del.className="del"; del.textContent="×";
+      del.onclick = () => removeFromCart(c.id);
+      row.appendChild(del); list.appendChild(row);
+    });
+  }
+  $("#cartTotal").textContent = won(cartTotal());
+}
+function openCart(){ drawCart(); $("#cartSheet").classList.add("show"); }
+$("#closeCart").onclick = () => $("#cartSheet").classList.remove("show");
+$("#payBtn").onclick = () => {
+  if(!cart.length){ toast("메뉴를 먼저 담아주세요"); return; }
+  $("#cartSheet").classList.remove("show");
+  showDone();
+};
+
+/* ---- 주문완료 ---- */
+function showDone(){
+  const cnt = cart.reduce((a,c)=>a+c.qty,0);
+  const first = cart[0] ? cart[0].name : "";
+  $("#doneItems").textContent = first + (cnt>1 ? " 외 "+(cnt-1)+"개" : "");
+  $("#doneNo").textContent = "A" + (100 + Math.floor(Math.random()*900));
+  $("#donePay").textContent = "결제 금액 " + won(cartTotal());
+  $("#doneSheet").classList.add("show");
+}
+$("#resetBtn").onclick = () => {
+  cart = [];
+  $("#doneSheet").classList.remove("show");
+  render(data.startScreenId);
+};
+
+/* ---- 토스트 ---- */
+let toastTimer = null;
+function toast(msg){
+  let t = $("#toast");
+  if(!t){ t = document.createElement("div"); t.id="toast"; t.className="toast"; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 1400);
+}
+
+load();
+</script>
+</body>
+</html>
