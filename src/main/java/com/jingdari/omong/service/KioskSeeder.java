@@ -37,12 +37,14 @@ public class KioskSeeder implements CommandLineRunner {
         for (Map.Entry<String, String[]> e : SEEDS.entrySet()) {
             String id = e.getKey(), name = e.getValue()[0], path = e.getValue()[1];
             try {
-                if (repo.existsById(id)) continue;
                 var res = new ClassPathResource(path);
                 if (!res.exists()) { log.warn("시드 스펙 없음: {}", path); continue; }
                 String json = new String(res.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                repo.save(new KioskSpec(id, name, json));
-                log.info("KioskSpec 시드 완료: {}", id);
+                // 기본 4개 브랜드는 '파일 = 원본'으로 매 시작 시 갱신(메뉴 수정이 바로 반영되도록).
+                // (제보로 등록된 브랜드는 SEEDS에 없으므로 건드리지 않음)
+                KioskSpec cur = repo.findById(id).orElse(null);
+                if (cur == null) { repo.save(new KioskSpec(id, name, json)); log.info("KioskSpec 시드: {}", id); }
+                else if (!json.equals(cur.getSpecJson())) { cur.setSpecJson(json); repo.save(cur); log.info("KioskSpec 갱신: {}", id); }
             } catch (Exception ex) {
                 log.warn("KioskSpec 시드 실패(무시, DB 미기동?): {} — {}", id, ex.getMessage());
             }

@@ -2,6 +2,7 @@ package com.jingdari.omong.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jingdari.omong.dto.ConverseResponse;
 import com.jingdari.omong.dto.RecognizeResponse;
 import com.jingdari.omong.model.KioskSpec;
 import org.slf4j.Logger;
@@ -75,6 +76,51 @@ public class RecognitionService {
         return keywordFallback(text, known);
     }
 
+    /** 스마트 대화: 잡담도 자연스럽게, 가게 추측+확인. AI 미설정/실패 시 키워드·기본 응답 폴백. */
+    public ConverseResponse converse(String text) {
+        if (text == null || text.isBlank()) return new ConverseResponse("", "NONE", null);
+        Map<String, String> known = known();
+        if (ai.ready()) {
+            String system = """
+                    너는 '오몽' 키오스크 도우미야. 사용자가 딴 얘기·엉뚱한 말을 해도 짧고 친절하게 자연스럽게 대답해.
+                    동시에 사용자가 어떤 가게/키오스크를 쓰려는지 최대한 추측해.
+                    - 아는 가게 목록에 있으면 그 id.
+                    - 목록엔 없지만 가게/장소로 보이면 brandId="generic" 과 그 이름(brandName).
+                    - 전혀 모르면 brandId="NONE".
+                    반드시 사용자가 쓴 언어로 대답하고, 가게를 추측했으면 reply에 "○○ 맞을까요?"처럼 확인 질문을 넣어.
+                    출력은 JSON 하나만: {"reply":"...","brandId":"...","brandName":"..."} (설명 금지)
+                    """;
+            String user = "아는 가게 목록:\n" + knownList(known) + "\n\n사용자: " + text;
+            ConverseResponse r = parseConverse(ai.generate(system, user), known);
+            if (r != null) return r;
+        }
+        // 폴백: 키워드로 가게 잡기 → 확인 질문, 아니면 부드러운 되묻기
+        RecognizeResponse kb = keywordFallback(text, known);
+        if (!"NONE".equals(kb.brandId()))
+            return new ConverseResponse(kb.brandName() + ", 맞으실까요?", kb.brandId(), kb.brandName());
+        return new ConverseResponse("네, 편하게 말씀해 주세요 🙂 어느 가게 키오스크를 도와드릴까요?", "NONE", null);
+    }
+
+    private ConverseResponse parseConverse(String out, Map<String, String> known) {
+        if (out == null || out.isBlank()) return null;
+        try {
+            int a = out.indexOf('{'), b = out.lastIndexOf('}');
+            JsonNode n = om.readTree(a >= 0 && b > a ? out.substring(a, b + 1) : out);
+            String reply = n.path("reply").asText("").trim();
+            String id = n.path("brandId").asText("NONE").trim();
+            String name = n.path("brandName").asText("").trim();
+            if (reply.isEmpty() && ("NONE".equals(id) || id.isEmpty())) return null;
+            if (!"NONE".equals(id) && !"generic".equals(id) && !known.containsKey(id)) { id = "NONE"; }
+            if ("generic".equals(id) && name.isEmpty()) id = "NONE";
+            String showName = known.containsKey(id) ? known.get(id) : ("generic".equals(id) ? name : null);
+            if (reply.isEmpty()) reply = "네, 말씀해 주세요 🙂";
+            return new ConverseResponse(reply, id, showName);
+        } catch (Exception e) {
+            log.warn("대화 JSON 파싱 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
     /** 사진 → 가게 판별(AI 비전). */
     public RecognizeResponse fromImage(byte[] image, String mime) {
         if (image == null || image.length == 0) return RecognizeResponse.none();
@@ -89,8 +135,33 @@ public class RecognitionService {
             String user = "아는 가게 목록:\n" + knownList(known) + "\n\n판별 결과를 JSON으로만.";
             RecognizeResponse r = parse(ai.generateWithImage(system, user, image, mime), known);
             if (r != null) return r;
+            // 아는 가게가 아니면 → 일반 인식(가게/장소 이름 + 종류). 병원/공항/새 브랜드 등도 "○○네요"로 안내 가능.
+            String gsys = """
+                    이 사진은 어떤 가게·장소의 키오스크 화면·메뉴판·간판·로고일 수 있다.
+                    사진 속 로고/상호/글자를 근거로 상호(장소) 이름을 한국어로 짧게 정하고, 종류(kind)를 고른다.
+                    kind: order(음식·음료 등 주문), ticket(발권·병원·공항·민원 등), unknown.
+                    출력은 JSON 하나만: {"brandName":"○○","kind":"order|ticket|unknown"} (모르면 brandName="")
+                    """;
+            RecognizeResponse g = parseGeneric(ai.generateWithImage(gsys, "판별 결과를 JSON으로만.", image, mime));
+            if (g != null) return g;
         }
         return RecognizeResponse.none();
+    }
+
+    /** 아는 브랜드가 아닐 때: 상호 이름 + 종류만 일반 인식. */
+    private RecognizeResponse parseGeneric(String out) {
+        if (out == null || out.isBlank()) return null;
+        try {
+            int a = out.indexOf('{'), b = out.lastIndexOf('}');
+            JsonNode n = om.readTree(a >= 0 && b > a ? out.substring(a, b + 1) : out);
+            String name = n.path("brandName").asText("").trim();
+            String kind = n.path("kind").asText("unknown").trim();
+            if (name.isBlank()) return null;
+            return new RecognizeResponse("generic", name, kind);
+        } catch (Exception e) {
+            log.warn("일반 인식 JSON 파싱 실패: {}", e.getMessage());
+            return null;
+        }
     }
 
     private RecognizeResponse parse(String out, Map<String, String> known) {

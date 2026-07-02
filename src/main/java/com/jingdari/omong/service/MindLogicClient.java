@@ -102,7 +102,7 @@ public class MindLogicClient {
         HttpResponse<String> res;
         try {
             HttpRequest req = HttpRequest.newBuilder(URI.create(endpoint()))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(18))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(om.writeValueAsString(body), StandardCharsets.UTF_8))
