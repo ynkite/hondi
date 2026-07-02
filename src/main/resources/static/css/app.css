@@ -293,6 +293,8 @@ footer.bar{padding:10px 12px;background:var(--card);border-top:1px solid var(--s
 /* ===== 헤더 계정(로그인 상태) ===== */
 .auth .who{font-weight:800;color:var(--hallabong-deep);font-size:.92rem;
   max-width:9.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
+.auth .admin-link{text-decoration:none;display:inline-flex;align-items:center;color:var(--sea);
+  border-color:var(--sea)}
 
 /* ===== 로그인(선택 · 게스트-우선) ===== */
 .login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;

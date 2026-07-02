@@ -7,7 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * 오몽 사용자. 로그인은 두 갈래뿐이라 최소 정보만 담는다(배리어프리 · 실버 타깃).
@@ -38,7 +39,16 @@ public class AppUser {
     @Column(length = 16)
     private String provider;
 
-    private Instant createdAt;
+    /** USER(기본) | ADMIN. 관리자 승격은 운영자가 DB에서 직접 변경(UPDATE app_user SET role='ADMIN' ...). */
+    @Column(length = 16)
+    private String role = "USER";
+
+    /** 자동 로그인(remember-me) 토큰. 로그인 시 발급해 쿠키로 내려주고, 재방문 시 이 값으로 세션 복원. */
+    @Column(length = 64, unique = true)
+    private String rememberToken;
+
+    /** 한국시간(KST) 벽시계로 저장 — DB에서 봐도 실제 한국 시각과 일치(UTC 어긋남 방지). */
+    private LocalDateTime createdAt;
 
     protected AppUser() {}
 
@@ -47,7 +57,8 @@ public class AppUser {
         this.name = name;
         this.phone = phone;
         this.provider = provider;
-        this.createdAt = Instant.now();
+        this.role = "USER";
+        this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 
     public Long getId() { return id; }
@@ -55,7 +66,12 @@ public class AppUser {
     public String getName() { return name; }
     public String getPhone() { return phone; }
     public String getProvider() { return provider; }
-    public Instant getCreatedAt() { return createdAt; }
+    public String getRole() { return role; }
+    /** 관리자 여부(대소문자 무시, null 안전). */
+    public boolean isAdmin() { return role != null && role.equalsIgnoreCase("ADMIN"); }
+    public String getRememberToken() { return rememberToken; }
+    public void setRememberToken(String v) { this.rememberToken = v; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setName(String v) { this.name = v; }
     public void setPhone(String v) { this.phone = v; }

@@ -764,7 +764,7 @@ async function checkAuth(){
     const r=await fetch("/auth/me",{headers:{Accept:"application/json"}});
     if(r.ok){ const j=await r.json();
       state.kakaoEnabled=!!j.kakaoEnabled;
-      state.user = j.loggedIn ? { name:j.name, phone:j.phone, provider:j.provider } : null;
+      state.user = j.loggedIn ? { name:j.name, phone:j.phone, provider:j.provider, admin:!!j.admin } : null;
     }
   }catch(e){}
   renderAuth();
@@ -775,9 +775,15 @@ function renderAuth(){
   if(state.user){
     const who=document.createElement("span"); who.className="who";
     who.textContent=greetName(state.user)||t("login");
+    box.appendChild(who);
+    if(state.user.admin){   // 관리자만 대시보드 진입 버튼
+      const adm=document.createElement("a"); adm.className="ghostbtn admin-link"; adm.href="/admin";
+      adm.textContent="관리자"; adm.setAttribute("aria-label","관리자 대시보드");
+      box.appendChild(adm);
+    }
     const out=document.createElement("button"); out.className="ghostbtn"; out.id="logoutBtn";
     out.textContent=t("logout"); out.onclick=doLogout;
-    box.appendChild(who); box.appendChild(out);
+    box.appendChild(out);
   } else {
     const inb=document.createElement("button"); inb.className="ghostbtn"; inb.id="loginEntry";
     inb.textContent=t("login"); inb.setAttribute("aria-label",t("login"));
@@ -826,6 +832,13 @@ function handleLoginRedirect(){
 }
 function fmtPhone(p){ if(!p) return ""; const d=p.replace(/\D/g,"");
   return d.length===11 ? d.replace(/(\d{3})(\d{4})(\d{4})/,"$1-$2-$3") : d; }
+/* 입력 중 자동 하이픈: 숫자만 남기고 3-4-4 로(예: 01012345678 → 010-1234-5678). 사용자가 - 안 쳐도 됨. */
+function autoHyphen(v){
+  const d=(v||"").replace(/\D/g,"").slice(0,11);
+  if(d.length<4) return d;
+  if(d.length<8) return d.slice(0,3)+"-"+d.slice(3);
+  return d.slice(0,3)+"-"+d.slice(3,7)+"-"+d.slice(7);
+}
 
 /* ============ 유틸 ============ */
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
@@ -854,6 +867,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
   $("#kakaoBtn").onclick=goKakao;
   $("#noKakaoBtn").onclick=()=>show("signup");
   $("#signupForm").addEventListener("submit", submitSignup);
+  $("#suPhone").addEventListener("input", (e)=>{ e.target.value=autoHyphen(e.target.value); });
   $("#fontToggle").onclick=toggleFont;
   $("#soundBtn").onclick=cycleSound;
   $("#safetyBtn").onclick=()=>show("staff");

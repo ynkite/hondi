@@ -67,6 +67,27 @@ public class UserService {
         return id == null ? Optional.empty() : users.findById(id);
     }
 
+    /** 자동 로그인 토큰 발급(로그인 시). 쿠키로 내려줄 값을 반환. */
+    @Transactional
+    public String issueRememberToken(AppUser u) {
+        String token = java.util.UUID.randomUUID().toString().replace("-", "");
+        u.setRememberToken(token);
+        users.save(u);
+        return token;
+    }
+
+    /** 쿠키 토큰으로 사용자 찾기(재방문 시 세션 복원용). */
+    public Optional<AppUser> byRememberToken(String token) {
+        return (token == null || token.isBlank()) ? Optional.empty() : users.findByRememberToken(token);
+    }
+
+    /** 로그아웃 시 토큰 무효화. */
+    @Transactional
+    public void clearRememberToken(Long id) {
+        if (id == null) return;
+        users.findById(id).ifPresent(u -> { u.setRememberToken(null); users.save(u); });
+    }
+
     /** 로그인 사용자의 전화번호 보완(주문서에 필요할 때만 물어보는 용도). */
     @Transactional
     public AppUser updatePhone(Long id, String phone) {
