@@ -413,8 +413,21 @@ function askCartDecision(){
   more.onclick=()=>{ addUser(t("addMore")); addMore(); };
   const fin=document.createElement("button"); fin.className="qbtn"; fin.type="button";
   fin.innerHTML=`<span class="qi" aria-hidden="true">✅</span><span class="qt">${esc(t("finish"))}</span><span class="qs">${esc(t("finishSub"))}</span>`;
-  fin.onclick=()=>{ addUser(t("finish")); finishOrder(); };
+  fin.onclick=()=>{ addUser(t("finish")); askDine(); };
   el.appendChild(more); el.appendChild(fin); focusLastOpt();
+}
+/* 완료 후 매장/포장 선택 (말하기·버튼 둘 다). 선택은 조작가이드의 '어디서 드실건가요?' 단계에 반영된다. */
+function askDine(){
+  state.stage="dine";
+  addBot("🍽️ 어디서 드실 건가요? 매장, 포장 중에 골라 주세요."); speak("어디서 드실 건가요? 매장에서 드시면 매장, 가져가시면 포장을 골라 주세요.");
+  const el=addOpts(2);
+  [["here","🏪","매장","여기서 먹고 가요"],["togo","🛍️","포장","가지고 갈게요"]].forEach(([id,ic,label,sub])=>{
+    const b=document.createElement("button"); b.className="qbtn"; b.type="button"; b.setAttribute("aria-label",label);
+    b.innerHTML=`<span class="qi" aria-hidden="true">${ic}</span><span class="qt">${esc(label)}</span><span class="qs">${esc(sub)}</span>`;
+    b.onclick=()=>{ state.dineType=id; addUser(label); finishOrder(); };
+    el.appendChild(b);
+  });
+  focusLastOpt();
 }
 function addMore(){ state.stage="funnel"; resetFunnel(); funnelStep(); }
 function finishOrder(){ saveLastOrder(); state.stage="guide"; show("guide"); }
@@ -427,7 +440,8 @@ async function openGuide(){
   const item = cart[0];
   let spec=null; try{ spec=await getSpec("coffee.v2"); }catch(e){}
   guideSteps=[];
-  guideSteps.push({ kind:"dine", target:"here", hint:t("guideStore") });
+  const dine = state.dineType || "here";   // 말하기 흐름에서 고른 매장/포장 반영
+  guideSteps.push({ kind:"dine", target:dine, hint: dine==="togo" ? "먼저 '포장'을 눌러요" : t("guideStore") });
   if(spec) guideSteps.push({ kind:"kiosk", spec, targetId:item?item.id:null, hint:(item?item.label+" ":"")+t("guideTapThis") });
   guideSteps.push({ kind:"cart", hint:"결제하기 "+t("guideTapThis") });
   guideSteps.push({ kind:"pay", hint:t("askPay") });
@@ -557,7 +571,7 @@ function renderKiosk(k, spec, targetId){
     const card=document.createElement("div"); card.className="k-card"; card.style.background=th.cardBg||"#fff";
     card.style.gridColumn=(it.c+1); card.style.gridRow=(it.r+1);
     card.setAttribute("role","button"); card.tabIndex=0; card.setAttribute("aria-label",it.name);
-    const thumb=document.createElement("div"); thumb.className="k-thumb"; thumb.style.background=th.thumbBg||"#faf6ea";
+    const thumb=document.createElement("div"); thumb.className="k-thumb"; thumb.style.background="#fff"; // 이미지가 짧으면 흰 배경으로 채움
     if(it.cut||it.thumb){
       const img=document.createElement("img"); img.alt=""; img.src=it.cut||it.thumb;
       img.onerror=()=>{ if(it.thumb && img.getAttribute("src")!==it.thumb){ img.src=it.thumb; } };
@@ -714,7 +728,7 @@ function renderOrderInto(sel){
 function buildQR(){
   const box=$("#qrBox"); box.innerHTML="";
   if(window.QRCode){
-    try{ new QRCode(box,{text:orderText(),width:240,height:240,correctLevel:QRCode.CorrectLevel.M}); box.setAttribute("role","img"); box.setAttribute("aria-label","주문 QR 코드"); return; }catch(e){ box.innerHTML=""; }
+    try{ new QRCode(box,{text:orderText(),width:256,height:256,correctLevel:QRCode.CorrectLevel.L}); box.setAttribute("role","img"); box.setAttribute("aria-label","주문 QR 코드"); return; }catch(e){ box.innerHTML=""; }
   }
   const N=21;
   const seed=(state.brandId||"paik")+"|"+cart.map(c=>c.id).join(",");
@@ -739,9 +753,11 @@ function orderNo(){
   return "OM-"+ymd+"-"+String(h).padStart(4,"0");
 }
 function payName(){ const m=state.payMethod; return m==="cash"?t("payCash"):m==="mobile"?t("payMobile"):t("payCard"); }
-function orderText(){   // QR에 담기는 표준 주문서(스캔 시 그대로 보임)
-  let total=0; const lines=cart.map(c=>{ const q=c.qty||1, amt=(c.price||0)*q; total+=amt; return "- "+c.label+" x"+q+" = "+amt; }).join("\n");
-  return "OMONG ORDER v1\nstore: "+(state.brandLabel||"")+"\nno: "+orderNo()+"\ndate: "+nowStr()+"\n"+lines+"\ntotal: "+total+" KRW\npay: "+(state.payMethod||"card");
+function orderText(){
+  // ⚠ QR 라이브러리(qrcodejs 1.0.0)는 한글 등 멀티바이트에서 'code length overflow' 로 실패한다.
+  //   그래서 QR 에는 ASCII 만 담는다(brandId/itemId/숫자). 사람이 읽는 주문서는 '직원에게 보여주기' 화면에 있음.
+  let total=0; const lines=cart.map(c=>{ const q=c.qty||1; total+=(c.price||0)*q; return c.id+" x"+q; }).join("\n");
+  return "OMONG ORDER\nNo "+orderNo()+"\nStore "+(state.brandId||"-")+"\n"+lines+"\nTotal "+total+" KRW";
 }
 function renderOrderForm(sel){
   const box=$(sel); if(!box) return; box.innerHTML="";
@@ -816,6 +832,7 @@ function routeUtterance(text){
   if(state.screen==="guide") return guideVoice(text);
   if(state.stage==="entry") return handleEntry(text);
   if(state.stage==="cartDecision") return decisionVoice(text);
+  if(state.stage==="dine") return dineVoice(text);
   if(state.stage==="funnel" && state.currentQ){ return resolveFunnelUtterance(text); }
   const it=matchItem(text); if(it) return resolveItem(it);
   aiPick(text);
@@ -894,9 +911,16 @@ function guideVoice(text){
   }
 }
 function decisionVoice(text){
-  if(/완료|끝|그만|됐|충분|없|아니|finish|done|no|xong|完成|就这|完了|終わり|いい/i.test(text)) return finishOrder();
+  if(/완료|끝|그만|됐|충분|없|아니|finish|done|no|xong|完成|就这|完了|終わり|いい/i.test(text)) return askDine();
   if(/더|추가|또|하나|more|add|thêm|them|添加|再|追加|もう/i.test(text)) return addMore();
   const it=matchItem(text); if(it){ addMore(); setTimeout(()=>resolveItem(it),50); }
+}
+/* 매장/포장 음성 인식 */
+function dineVoice(text){
+  if(/포장|가져|테이크|to\s*go|takeout|take\s*away|mang\s*về|mang\s*ve|打包|带走|持ち帰|テイクアウト/i.test(text)){ state.dineType="togo"; addUser("포장"); return finishOrder(); }
+  if(/매장|먹고|여기|먹을|안에서|dine|eat\s*in|here|tại\s*quán|tai\s*quan|堂食|店内|ここ/i.test(text)){ state.dineType="here"; addUser("매장"); return finishOrder(); }
+  // 못 알아들으면 기본 매장으로 진행(막히지 않게)
+  state.dineType="here"; finishOrder();
 }
 async function aiPick(text){
   const items=coffeeItems();

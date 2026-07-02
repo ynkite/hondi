@@ -204,7 +204,7 @@ header.top{background:var(--card);border-bottom:1px solid var(--stone-line);
   padding:14px 16px;display:flex;align-items:center;gap:10px;line-height:1.35}
 .guide-hint .gh-ic{font-size:1.5rem;flex:0 0 auto}
 .guide-view{flex:1;overflow:auto;background:#e9edf1;display:flex;justify-content:center;align-items:flex-start;padding:10px}
-.kiosk{position:relative;width:100%;max-width:420px;aspect-ratio:1000/1333;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex}
+.kiosk{position:relative;width:100%;max-width:420px;min-height:100%;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex}
 .k-sidebar{width:21%;flex:0 0 auto;display:flex;flex-direction:column;gap:4px;padding:6px 4px;overflow:hidden}
 .k-tab{font-size:9px;font-weight:700;color:#5a6577;background:#fff;border:1px solid #e3e8f0;border-radius:8px;padding:6px 3px;text-align:center;line-height:1.15}
 .k-tab.on{background:#d7d9e0;color:#2a2723;font-weight:800}
