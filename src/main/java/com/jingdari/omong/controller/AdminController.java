@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jingdari.omong.model.AppUser;
 import com.jingdari.omong.model.KioskSpec;
+import com.jingdari.omong.model.PendingReport;
 import com.jingdari.omong.service.KioskSpecRepository;
+import com.jingdari.omong.service.PendingReportRepository;
 import com.jingdari.omong.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
@@ -35,11 +37,14 @@ public class AdminController {
 
     private final UserService userService;
     private final KioskSpecRepository specRepo;
+    private final PendingReportRepository pendingRepo;
     private final ObjectMapper om;
 
-    public AdminController(UserService userService, KioskSpecRepository specRepo, ObjectMapper om) {
+    public AdminController(UserService userService, KioskSpecRepository specRepo,
+                           PendingReportRepository pendingRepo, ObjectMapper om) {
         this.userService = userService;
         this.specRepo = specRepo;
+        this.pendingRepo = pendingRepo;
         this.om = om;
     }
 
@@ -82,6 +87,50 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("ok", true, "brandId", brandId));
     }
 
+    // ===================== 검수 대기(제보 승인) =====================
+
+    /** 검수 대기 중인 제보 목록. 관리자가 내용을 보고 승인/거절한다. */
+    @GetMapping(value = "/admin/api/pending", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> listPending(HttpSession session) {
+        if (currentAdmin(session).isEmpty()) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (PendingReport p : pendingRepo.findAll()) {
+            Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put("id", p.getId());
+            row.put("brandName", p.getBrandName());
+            row.put("brandId", p.getBrandId());
+            row.put("itemCount", countItems(p.getSpecJson()));
+            row.put("items", previewItems(p.getSpecJson()));   // 메뉴 이름 미리보기(판단용)
+            row.put("reporter", p.getReporterName());
+            row.put("createdAt", p.getCreatedAt() == null ? null : p.getCreatedAt().toString());
+            out.add(row);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    /** 승인: 대기 제보를 정식 등록(KioskSpec)으로 옮기고 대기함에서 제거. */
+    @PostMapping(value = "/admin/api/pending/{id}/approve", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> approve(@PathVariable Long id, HttpSession session) {
+        if (currentAdmin(session).isEmpty()) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        PendingReport p = pendingRepo.findById(id).orElse(null);
+        if (p == null) return ResponseEntity.notFound().build();
+        specRepo.save(new KioskSpec(p.getBrandId(), p.getBrandName(), p.getSpecJson())); // 정식 등록
+        pendingRepo.deleteById(id);
+        return ResponseEntity.ok(Map.of("ok", true, "brandId", p.getBrandId(), "brandName", p.getBrandName()));
+    }
+
+    /** 거절: 대기 제보 삭제(정식 등록 안 함). */
+    @DeleteMapping(value = "/admin/api/pending/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> reject(@PathVariable Long id, HttpSession session) {
+        if (currentAdmin(session).isEmpty()) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        if (!pendingRepo.existsById(id)) return ResponseEntity.notFound().build();
+        pendingRepo.deleteById(id);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
     private int countItems(String specJson) {
         try {
             JsonNode items = om.readTree(specJson).path("items");
@@ -89,5 +138,21 @@ public class AdminController {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    /** 스펙 JSON 에서 메뉴 이름을 최대 8개까지 뽑아 미리보기용으로 반환. */
+    private List<String> previewItems(String specJson) {
+        List<String> names = new ArrayList<>();
+        try {
+            JsonNode items = om.readTree(specJson).path("items");
+            if (items.isArray()) {
+                for (JsonNode it : items) {
+                    String nm = it.path("name").asText("").trim();
+                    if (!nm.isEmpty()) names.add(nm);
+                    if (names.size() >= 8) break;
+                }
+            }
+        } catch (Exception ignored) {}
+        return names;
     }
 }

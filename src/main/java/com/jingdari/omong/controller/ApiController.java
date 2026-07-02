@@ -86,12 +86,13 @@ public class ApiController {
         }
     }
 
-    /** 제보: 키오스크 사진 → AI 분석 → 상품 크롭 → DB에 새 키오스크 스펙 저장. */
+    /** 제보: 키오스크 사진 → AI 분석 → 상품 크롭 → "검수 대기함"에 저장(관리자 승인 후 정식 등록). */
     @PostMapping(value = "/report", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ReportResponse report(@RequestParam("image") MultipartFile image,
-                                 @RequestParam(value = "storeName", required = false) String storeName)
+                                 @RequestParam(value = "storeName", required = false) String storeName,
+                                 @RequestParam(value = "reporterName", required = false) String reporterName)
             throws IOException {
-        return report.process(image.getBytes(), image.getContentType(), storeName);
+        return report.process(image.getBytes(), image.getContentType(), storeName, reporterName);
     }
 
     /** 사진 진입: 업로드 사진으로 가게 판별(AI 비전). 미인식 시 brandId=NONE. */

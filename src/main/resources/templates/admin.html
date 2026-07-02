@@ -6,16 +6,13 @@
   <title>오몽 · 관리자 대시보드</title>
   <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
   <style>
-    /* 관리자 화면은 앱 팔레트를 재사용하되, 데스크톱 대시보드 레이아웃으로 넓게 */
     .admin{max-width:960px;margin:0 auto;padding:20px 18px 60px}
     .admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;
       padding:14px 0 18px;border-bottom:2px solid var(--stone-line);margin-bottom:22px}
     .admin-top h1{font-size:1.4rem;margin:0;color:var(--hallabong-deep)}
-    .admin-top .sub{color:var(--stone);font-size:.85rem;font-weight:600}
     .card{background:var(--card);border:1px solid var(--stone-line);border-radius:18px;
       padding:20px;box-shadow:var(--shadow-sm);margin-bottom:22px}
-    .card h2{margin:0 0 4px;font-size:1.15rem}
-    .card .desc{color:var(--stone);font-size:.88rem;margin:0 0 16px}
+    .card h2{margin:0 0 16px;font-size:1.15rem;display:flex;align-items:center;gap:8px}
     .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
     .frow label{font-weight:700;font-size:.95rem}
     .frow input[type=text],.frow input[type=file]{border:2px solid var(--stone-line);border-radius:12px;
@@ -23,7 +20,8 @@
     .btn{border:none;border-radius:12px;padding:13px 20px;font-size:1rem;font-weight:800;cursor:pointer}
     .btn.primary{background:var(--hallabong);color:#fff}
     .btn.ghost{background:#fff;border:1.5px solid var(--stone-line);color:var(--stone)}
-    .btn.danger{background:#fff;border:1.5px solid var(--danger);color:var(--danger);padding:7px 12px;font-size:.85rem;border-radius:10px}
+    .btn.ok{background:var(--gyul-green);color:#fff;padding:8px 16px;font-size:.9rem;border-radius:10px}
+    .btn.danger{background:#fff;border:1.5px solid var(--danger);color:var(--danger);padding:8px 14px;font-size:.85rem;border-radius:10px}
     .btn:active{transform:translateY(1px)}
     .btn:disabled{opacity:.55;cursor:default}
     .preview{margin-top:10px}
@@ -31,38 +29,47 @@
     .result{margin-top:14px;padding:12px 14px;border-radius:12px;font-weight:700;display:none}
     .result.ok{background:var(--gyul-soft);color:var(--gyul-green);display:block}
     .result.err{background:#fdece7;color:var(--danger);display:block}
-    table{width:100%;border-collapse:collapse;font-size:.92rem}
+    .count-badge{background:var(--hallabong-soft);color:var(--hallabong-deep);font-size:.85rem;
+      font-weight:800;border-radius:999px;padding:2px 10px}
+    /* 검수 대기 카드 */
+    .pend{border:1.5px solid var(--stone-line);border-radius:14px;padding:15px 16px;margin-bottom:12px}
+    .pend .h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .pend .nm{font-weight:800;font-size:1.05rem}
+    .pend .meta{color:var(--stone);font-size:.82rem;margin-top:2px}
+    .pend .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+    .chip{background:var(--sand-2);color:var(--basalt);border-radius:999px;padding:4px 10px;font-size:.82rem;font-weight:600}
+    .pend .acts{display:flex;gap:8px}
+    /* 등록 목록 테이블: 고정 레이아웃으로 열이 어긋나지 않게 */
+    table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.92rem}
     th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--stone-line);
-      vertical-align:middle;white-space:nowrap}
+      vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     th{color:var(--stone);font-size:.8rem;text-transform:uppercase;letter-spacing:.3px}
-    /* 열 너비 고정: 브랜드/ID/메뉴수/수정일/삭제 → 열이 나란히 정렬됨 */
-    th:nth-child(1),td:nth-child(1){width:26%}
-    th:nth-child(2),td:nth-child(2){width:24%}
-    th:nth-child(3),td:nth-child(3){width:12%;text-align:center}
-    th:nth-child(4),td:nth-child(4){width:26%}
-    th:nth-child(5),td:nth-child(5){width:12%;text-align:right}
-    td.brand{font-weight:800}
+    col.c-brand{width:28%} col.c-id{width:24%} col.c-cnt{width:12%} col.c-date{width:24%} col.c-act{width:12%}
+    td.cnt,th.cnt{text-align:center} td.act,th.act{text-align:right}
+    /* app.css 의 헤더 로고용 .brand 와 충돌하지 않도록 고유 클래스 사용 */
+    td.kbrand{font-weight:800}
     .badge{display:inline-block;background:var(--hallabong-soft);color:var(--hallabong-deep);
       font-size:.72rem;font-weight:800;border-radius:999px;padding:2px 9px;margin-left:6px;vertical-align:middle}
-    .muted{color:var(--stone);font-size:.82rem}
+    .muted{color:var(--stone)}
     .empty{color:var(--stone);text-align:center;padding:26px}
   </style>
 </head>
 <body>
   <div class="admin">
     <div class="admin-top">
-      <div>
-        <h1>🍊 오몽 관리자 대시보드</h1>
-        <span class="sub">ADMIN 전용 · 새 브랜드 키오스크 학습(제보) 및 관리</span>
-      </div>
+      <h1>🍊 오몽 관리자 대시보드</h1>
       <a class="btn ghost" href="/">← 앱으로</a>
     </div>
 
-    <!-- A. 새 브랜드 학습(제보): 기존 4개 브랜드와 동일한 /api/report 파이프라인 재사용 -->
+    <!-- A. 검수 대기(제보 승인) — 사용자가 제보한 키오스크를 확인 후 승인해야 등록됨 -->
     <section class="card">
-      <h2>새 브랜드 키오스크 학습</h2>
-      <p class="desc">키오스크 <b>메뉴 화면</b> 사진을 올리면 AI가 메뉴·가격·위치를 읽어 상품 이미지를 잘라내고,
-        렌더러 스펙(JSON)으로 만들어 DB에 등록합니다. (기존 빽다방·맘스터치·맥도날드·메가커피와 같은 방식)</p>
+      <h2>검수 대기 <span class="count-badge" id="pendCount">0</span></h2>
+      <div id="pendWrap"><p class="empty">불러오는 중…</p></div>
+    </section>
+
+    <!-- B. 직접 제보 올리기(관리자) — 이것도 검수 대기로 들어감 -->
+    <section class="card">
+      <h2>키오스크 제보 올리기</h2>
       <form id="learnForm">
         <div class="frow">
           <label for="storeName">가게 이름 (힌트)</label>
@@ -73,15 +80,14 @@
           <input type="file" id="photo" accept="image/*">
         </div>
         <div class="preview" id="preview"></div>
-        <button class="btn primary" id="learnBtn" type="submit">학습시키기</button>
+        <button class="btn primary" id="learnBtn" type="submit">제보 접수</button>
         <div class="result" id="result" role="status" aria-live="polite"></div>
       </form>
     </section>
 
-    <!-- B. 등록된 키오스크 관리 -->
+    <!-- C. 등록된 키오스크(정식) 관리 -->
     <section class="card">
-      <h2>등록된 키오스크 <span class="muted" id="count"></span></h2>
-      <p class="desc">현재 DB(kiosk_spec)에 등록된 키오스크입니다. 기본 4개 브랜드는 <span class="badge">기본</span> 표시됩니다.</p>
+      <h2>등록된 키오스크 <span class="count-badge" id="count">0</span></h2>
       <div id="listWrap"><p class="empty">불러오는 중…</p></div>
     </section>
   </div>
@@ -89,76 +95,113 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDate = s => s ? new Date(s).toLocaleString("ko-KR") : "-";
 
-// 사진 미리보기
+/* ---------- 사진 미리보기 ---------- */
 $("#photo").addEventListener("change", e => {
-  const f = e.target.files[0]; const box = $("#preview");
-  box.innerHTML = f ? `<img src="${URL.createObjectURL(f)}" alt="미리보기">` : "";
+  const f = e.target.files[0];
+  $("#preview").innerHTML = f ? `<img src="${URL.createObjectURL(f)}" alt="미리보기">` : "";
 });
 
-// 학습(제보) 제출 → 기존 /api/report 그대로 호출
+/* ---------- 제보 접수 → /api/report (검수 대기로 저장) ---------- */
 $("#learnForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const file = $("#photo").files[0];
-  const res = $("#result"), btn = $("#learnBtn");
+  const file = $("#photo").files[0], res = $("#result"), btn = $("#learnBtn");
   if (!file) { showResult(false, "사진을 먼저 선택해 주세요."); return; }
-  btn.disabled = true; const orig = btn.textContent; btn.textContent = "AI가 메뉴를 읽는 중…";
-  res.className = "result";
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = "AI가 메뉴를 읽는 중…"; res.className = "result";
   const fd = new FormData();
   fd.append("image", file);
   fd.append("storeName", $("#storeName").value.trim());
+  fd.append("reporterName", "관리자");
   try {
     const j = await (await fetch("/api/report", { method:"POST", body: fd })).json();
     if (j && j.ok) {
-      showResult(true, `✅ ${j.brandName} 등록 완료 · 메뉴 ${j.itemCount}개 (brandId: ${j.brandId})`);
+      showResult(true, `✅ ${j.brandName} 접수 완료 · 메뉴 ${j.itemCount}개 → 아래 '검수 대기'에서 승인하세요`);
       $("#learnForm").reset(); $("#preview").innerHTML = "";
-      loadKiosks();
+      loadPending();
     } else {
-      showResult(false, (j && j.message) ? j.message : "학습에 실패했어요. 메뉴가 잘 보이게 다시 찍어 주세요.");
+      showResult(false, (j && j.message) ? j.message : "실패했어요. 메뉴가 잘 보이게 다시 찍어 주세요.");
     }
-  } catch (err) {
-    showResult(false, "요청 중 오류가 났어요. 다시 시도해 주세요.");
-  } finally {
-    btn.disabled = false; btn.textContent = orig;
-  }
+  } catch (err) { showResult(false, "요청 중 오류가 났어요. 다시 시도해 주세요."); }
+  finally { btn.disabled = false; btn.textContent = orig; }
 });
 function showResult(ok, msg){ const r = $("#result"); r.className = "result " + (ok?"ok":"err"); r.textContent = msg; }
 
-// 등록 목록 로드/렌더
+/* ---------- 검수 대기 목록 ---------- */
+async function loadPending(){
+  const wrap = $("#pendWrap");
+  try {
+    const r = await fetch("/admin/api/pending");
+    if (r.status === 403) { wrap.innerHTML = '<p class="empty">권한이 없습니다.</p>'; return; }
+    const list = await r.json();
+    $("#pendCount").textContent = list.length;
+    if (!list.length) { wrap.innerHTML = '<p class="empty">검수 대기 중인 제보가 없어요.</p>'; return; }
+    wrap.innerHTML = "";
+    for (const p of list) {
+      const chips = (p.items||[]).map(n => `<span class="chip">${esc(n)}</span>`).join("");
+      const el = document.createElement("div"); el.className = "pend";
+      el.innerHTML = `
+        <div class="h">
+          <div>
+            <div class="nm">${esc(p.brandName)} <span class="muted" style="font-weight:600">· 메뉴 ${p.itemCount}개</span></div>
+            <div class="meta">id: ${esc(p.brandId)} · 제보자: ${esc(p.reporter||"익명")} · ${esc(fmtDate(p.createdAt))}</div>
+          </div>
+          <div class="acts">
+            <button class="btn ok" data-approve="${p.id}">승인</button>
+            <button class="btn danger" data-reject="${p.id}">거절</button>
+          </div>
+        </div>
+        <div class="chips">${chips || '<span class="muted">메뉴 미리보기 없음</span>'}</div>`;
+      wrap.appendChild(el);
+    }
+    wrap.querySelectorAll("[data-approve]").forEach(b => b.onclick = () => approve(b.dataset.approve));
+    wrap.querySelectorAll("[data-reject]").forEach(b => b.onclick = () => reject(b.dataset.reject));
+  } catch (e) { wrap.innerHTML = '<p class="empty">목록을 불러오지 못했어요.</p>'; }
+}
+async function approve(id){
+  if (!confirm("이 제보를 승인해 정식 등록할까요?")) return;
+  const r = await fetch(`/admin/api/pending/${id}/approve`, { method:"POST" });
+  if (r.ok) { loadPending(); loadKiosks(); } else alert("승인하지 못했어요.");
+}
+async function reject(id){
+  if (!confirm("이 제보를 거절(삭제)할까요?")) return;
+  const r = await fetch(`/admin/api/pending/${id}`, { method:"DELETE" });
+  if (r.ok) loadPending(); else alert("거절하지 못했어요.");
+}
+
+/* ---------- 등록된 키오스크 목록 ---------- */
 async function loadKiosks(){
   const wrap = $("#listWrap");
   try {
     const r = await fetch("/admin/api/kiosks");
     if (r.status === 403) { wrap.innerHTML = '<p class="empty">권한이 없습니다.</p>'; return; }
     const list = await r.json();
-    $("#count").textContent = list.length ? `(${list.length})` : "";
+    $("#count").textContent = list.length;
     if (!list.length) { wrap.innerHTML = '<p class="empty">아직 등록된 키오스크가 없어요.</p>'; return; }
-    let html = '<table><thead><tr><th>브랜드</th><th>brandId</th><th>메뉴 수</th><th>수정일</th><th></th></tr></thead><tbody>';
+    let html = `<table>
+      <colgroup><col class="c-brand"><col class="c-id"><col class="c-cnt"><col class="c-date"><col class="c-act"></colgroup>
+      <thead><tr><th>브랜드</th><th>BRANDID</th><th class="cnt">메뉴 수</th><th>수정일</th><th class="act"></th></tr></thead><tbody>`;
     for (const k of list) {
-      const when = k.updatedAt ? new Date(k.updatedAt).toLocaleString("ko-KR") : "-";
       html += `<tr>
-        <td class="brand">${esc(k.brandName)}${k.core?'<span class="badge">기본</span>':''}</td>
+        <td class="kbrand">${esc(k.brandName)}${k.core?'<span class="badge">기본</span>':''}</td>
         <td class="muted">${esc(k.brandId)}</td>
-        <td>${k.itemCount}</td>
-        <td class="muted">${esc(when)}</td>
-        <td><button class="btn danger" data-id="${esc(k.brandId)}">삭제</button></td>
+        <td class="cnt">${k.itemCount}</td>
+        <td class="muted">${esc(fmtDate(k.updatedAt))}</td>
+        <td class="act"><button class="btn danger" data-id="${esc(k.brandId)}">삭제</button></td>
       </tr>`;
     }
     html += '</tbody></table>';
     wrap.innerHTML = html;
-    wrap.querySelectorAll("button.danger").forEach(b => b.onclick = () => delKiosk(b.dataset.id));
-  } catch (e) {
-    wrap.innerHTML = '<p class="empty">목록을 불러오지 못했어요.</p>';
-  }
+    wrap.querySelectorAll("button.danger[data-id]").forEach(b => b.onclick = () => delKiosk(b.dataset.id));
+  } catch (e) { wrap.innerHTML = '<p class="empty">목록을 불러오지 못했어요.</p>'; }
 }
 async function delKiosk(brandId){
   if (!confirm(`'${brandId}' 키오스크를 삭제할까요?`)) return;
-  try {
-    const r = await fetch("/admin/api/kiosks/" + encodeURIComponent(brandId), { method:"DELETE" });
-    if (r.ok) loadKiosks(); else alert("삭제하지 못했어요.");
-  } catch (e) { alert("요청 중 오류가 났어요."); }
+  const r = await fetch("/admin/api/kiosks/" + encodeURIComponent(brandId), { method:"DELETE" });
+  if (r.ok) loadKiosks(); else alert("삭제하지 못했어요.");
 }
 
+loadPending();
 loadKiosks();
 </script>
 </body>

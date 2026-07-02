@@ -746,9 +746,10 @@ function initReport(){
       const j=await (await fetch("/api/report",{method:"POST",body:fd})).json();
       btn.disabled=false; btn.textContent=orig;
       if(j && j.ok){
-        openChat(j.brandName);
-        addMsg("bot","🎉 "+j.brandName+" "+t("reportRegistered")+" ("+j.itemCount+")");
-        startBrand(j.brandId, j.brandName);   // 제보한 키오스크로 바로 주문 도와주기
+        // 제보는 바로 등록되지 않고 관리자 검수 후 등록됨 → 접수 완료 화면
+        const msg=(j&&j.message)?j.message:t("reportDoneSub");
+        $("#reportDoneSub").textContent=msg; speak(msg);
+        show("reportDone");
       } else {
         $("#reportHint").textContent=(j&&j.message)?j.message:t("photoUnclear");
       }
