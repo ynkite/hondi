@@ -1,0 +1,66 @@
+#spring.application.name=omong
+#
+## ===== 업로드(키오스크 사진) =====
+#spring.servlet.multipart.max-file-size=15MB
+#spring.servlet.multipart.max-request-size=15MB
+#
+## ===== AI 제공자 스위치 =====
+## mindlogic | claude | ollama | mock  (모든 모델 실패 시 자동 규칙 폴백 → 데모 안 죽음)
+#kiosk.ai.provider=mindlogic
+## 단일 모델(참고용). 실제 호출은 아래 kiosk.ai.models 체인을 우선 사용.
+#kiosk.ai.model=claude-sonnet-4-6
+## 폴백 체인: 하나의 MindLogic 키로 앞에서부터 시도, 실패하면 다음 모델로.
+##  순서 = 클로드 → OpenAI → Groq → Gemini. 실제 사용 가능한 id는
+##  GET https://factchat-cloud.mindlogic.ai/v1/gateway/models/ 로 확인 후 조정하세요.
+##  (지원 안 되는 모델 id는 자동으로 건너뜀)
+#kiosk.ai.models=claude-sonnet-4-6,gpt-5.4-mini,llama-3.3-70b-versatile,gemini-3-flash-preview
+## 모델 호환성을 위해 temperature 는 기본 미전송(-1). 필요하면 0~2 로 지정.
+#mindlogic.temperature=-1
+## ===== Claude (Anthropic) — 기본 =====
+## 실제 키는 환경변수 ANTHROPIC_API_KEY 로 넣으세요. (아래는 더미 자리값)
+#spring.ai.anthropic.api-key=${ANTHROPIC_API_KEY:sk-ant-REPLACE_ME}
+## 모델 id 는 사용 중인 계정에 맞게 조정 (예: claude-sonnet-4-5 등)
+#spring.ai.anthropic.chat.options.model=claude-sonnet-4-5
+#spring.ai.anthropic.chat.options.temperature=0.3
+#
+## ===== Ollama (로컬) — 폴백/대체 =====
+#spring.ai.ollama.base-url=http://localhost:11434
+#spring.ai.ollama.chat.options.model=llava
+#spring.ai.ollama.chat.options.temperature=0.2
+## spring.ai.ollama.init.pull-model-strategy=when_missing
+#kiosk.ai.vision-model=llava
+#
+## ===== [추후] OpenAI =====
+## spring.ai.openai.api-key=${OPENAI_API_KEY}
+## spring.ai.openai.chat.options.model=gpt-4o
+#
+## ===== DB (MariaDB) — 키오스크 스펙 저장 =====
+## 먼저 DB/계정 생성 필요 (테이블·데이터는 앱이 자동 생성/시드):
+##   CREATE DATABASE omongdb CHARACTER SET utf8mb4;
+##   CREATE USER 'omong'@'localhost' IDENTIFIED BY 'omong';
+##   GRANT ALL ON omongdb.* TO 'omong'@'localhost';
+#spring.datasource.url=${DB_URL:jdbc:mariadb://localhost:3306/omongdb}
+#
+#spring.jpa.hibernate.ddl-auto=update
+#spring.jpa.open-in-view=false
+#spring.jpa.properties.hibernate.format_sql=false
+#mindlogic.base-url=https://factchat-cloud.mindlogic.ai/v1/gateway
+#mindlogic.api-key=USlS2C1ZikPh2jUGQ8PLWZah3imnBh1f
+#
+## ??
+##spring.datasource.username=${DB_USER:omong}
+##spring.datasource.password=${DB_PASSWORD:omong}
+#
+## aws
+## ===== ?? ?? =====
+#
+#server.port=8081
+#
+## ===== DB ?? (root ??) =====
+#spring.datasource.username=root
+#spring.datasource.password=12345678
+## ===== Kakao 로그인 (선택) — 키는 카카오 개발자 콘솔에서 발급 후 채우세요 =====
+## 키가 비어 있으면 카카오 버튼이 자동으로 간편가입(이름·전화)으로 우회합니다.
+#kakao.rest-api-key=${KAKAO_REST_API_KEY:}
+#kakao.client-secret=${KAKAO_CLIENT_SECRET:}
+#kakao.redirect-uri

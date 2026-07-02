@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>오몽 · 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+  <style>
+    /* 앱 목업(.phone/.app)을 그대로 재사용 — 관리자도 핸드폰 화면처럼 */
+    .adm-top{background:var(--card);border-bottom:1px solid var(--stone-line);position:sticky;top:0;z-index:10;
+      padding:calc(12px + var(--safe-t)) 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .adm-brand{display:flex;align-items:center;gap:10px}
+    .adm-brand img{height:40px;width:auto;display:block}
+    .adm-brand .tt{display:flex;flex-direction:column;line-height:1.15}
+    .adm-brand .tt b{font-size:1.15rem;color:var(--hallabong-deep);letter-spacing:-.5px}
+    .adm-brand .tt span{font-size:.66rem;color:var(--stone);font-weight:600;margin-top:2px}
+    .adm-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(28px + var(--safe-b))}
+    .card{background:var(--card);border:1px solid var(--stone-line);border-radius:20px;padding:16px 16px;
+      box-shadow:var(--shadow-sm);margin-bottom:14px}
+    .card h2{margin:0 0 13px;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+    .sec-ic{width:34px;height:34px;flex:0 0 auto;border-radius:11px;display:flex;align-items:center;justify-content:center;
+      font-size:1.1rem;background:var(--hallabong-soft)}
+    .count-badge{margin-left:auto;background:var(--hallabong-soft);color:var(--hallabong-deep);font-size:.85rem;
+      font-weight:800;border-radius:999px;padding:2px 11px}
+    .frow{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .frow label{font-weight:800;font-size:.92rem}
+    .frow input[type=text],.frow input[type=file]{border:2px solid var(--stone-line);border-radius:13px;
+      padding:12px 14px;font-size:1rem;background:#fff;color:var(--basalt);width:100%}
+    .frow input:focus{border-color:var(--hallabong);outline:none}
+    .btn{border:none;border-radius:13px;padding:12px 18px;font-size:.98rem;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--hallabong);color:#fff;width:100%;box-shadow:var(--shadow-sm)}
+    .btn.ghost{background:#fff;border:1.5px solid var(--stone-line);color:var(--stone);border-radius:999px;padding:8px 13px;font-size:.82rem}
+    .btn.ok{background:var(--gyul-green);color:#fff;padding:9px 15px;font-size:.88rem;border-radius:11px}
+    .btn.danger{background:#fff;border:1.5px solid var(--danger);color:var(--danger);padding:8px 13px;font-size:.82rem;border-radius:11px}
+    .btn:active{transform:translateY(1px)} .btn:disabled{opacity:.55;cursor:default}
+    .preview{margin-top:11px} .preview img{max-width:100%;border-radius:13px;border:1px solid var(--stone-line)}
+    .result{margin-top:12px;padding:12px 14px;border-radius:13px;font-weight:700;display:none;word-break:keep-all}
+    .result.ok{background:var(--gyul-soft);color:#256b3d;display:block}
+    .result.err{background:#fdece7;color:var(--danger);display:block}
+    /* 검수 대기 / 등록 키오스크 — 모두 카드형 행 (폰 너비에 맞춤) */
+    .row{border:1.5px solid var(--stone-line);border-radius:16px;padding:14px 15px;margin-bottom:11px;background:var(--sand)}
+    .row .h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .row .nm{font-weight:800;font-size:1.02rem;word-break:keep-all}
+    .row .meta{color:var(--stone);font-size:.8rem;margin-top:3px;word-break:break-all}
+    .row .acts{display:flex;gap:7px;flex:0 0 auto}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+    .chip{background:#fff;border:1px solid var(--stone-line);color:var(--basalt);border-radius:999px;padding:5px 10px;font-size:.8rem;font-weight:600}
+    .badge{display:inline-block;background:var(--gyul-soft);color:#256b3d;font-size:.7rem;font-weight:800;
+      border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+    .muted{color:var(--stone)}
+    .empty{color:var(--stone);text-align:center;padding:24px;font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="app">
+      <header class="adm-top">
+        <div class="adm-brand">
+          <img th:src="@{/img/omong-mascot.svg}" src="/img/omong-mascot.svg" alt="오몽">
+          <span class="tt"><b>오몽 관리자</b><span>제보 검수 · 키오스크 관리</span></span>
+        </div>
+        <a class="btn ghost" href="/">‹ 앱으로</a>
+      </header>
+
+      <div class="adm-body">
+        <!-- A. 검수 대기 -->
+        <section class="card">
+          <h2><span class="sec-ic" aria-hidden="true">🕵️</span>검수 대기<span class="count-badge" id="pendCount">0</span></h2>
+          <div id="pendWrap"><p class="empty">불러오는 중…</p></div>
+        </section>
+
+        <!-- B. 직접 제보 올리기 -->
+        <section class="card">
+          <h2><span class="sec-ic" aria-hidden="true">📷</span>키오스크 제보 올리기</h2>
+          <form id="learnForm">
+            <div class="frow">
+              <label for="storeName">가게 이름 (힌트)</label>
+              <input type="text" id="storeName" placeholder="예: 컴포즈커피 · 롯데리아">
+            </div>
+            <div class="frow">
+              <label for="photo">키오스크 메뉴 화면 사진</label>
+              <input type="file" id="photo" accept="image/*">
+            </div>
+            <div class="preview" id="preview"></div>
+            <button class="btn primary" id="learnBtn" type="submit">제보 접수</button>
+            <div class="result" id="result" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+
+        <!-- C. 등록된 키오스크 -->
+        <section class="card">
+          <h2><span class="sec-ic" aria-hidden="true">🗂️</span>등록된 키오스크<span class="count-badge" id="count">0</span></h2>
+          <div id="listWrap"><p class="empty">불러오는 중…</p></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDate = s => s ? new Date(s).toLocaleString("ko-KR") : "-";
+
+/* 사진 미리보기 */
+$("#photo").addEventListener("change", e => {
+  const f = e.target.files[0];
+  $("#preview").innerHTML = f ? `<img src="${URL.createObjectURL(f)}" alt="미리보기">` : "";
+});
+
+/* 제보 접수 → /api/report (검수 대기로 저장) */
+$("#learnForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const file = $("#photo").files[0], res = $("#result"), btn = $("#learnBtn");
+  if (!file) { showResult(false, "사진을 먼저 선택해 주세요."); return; }
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = "AI가 메뉴를 읽는 중…"; res.className = "result";
+  const fd = new FormData();
+  fd.append("image", file);
+  fd.append("storeName", $("#storeName").value.trim());
+  fd.append("reporterName", "관리자");
+  try {
+    const j = await (await fetch("/api/report", { method:"POST", body: fd })).json();
+    if (j && j.ok) {
+      showResult(true, `✅ ${j.brandName} 접수 완료 · 메뉴 ${j.itemCount}개 → 아래 '검수 대기'에서 승인하세요`);
+      $("#learnForm").reset(); $("#preview").innerHTML = "";
+      loadPending();
+    } else {
+      showResult(false, (j && j.message) ? j.message : "실패했어요. 메뉴가 잘 보이게 다시 찍어 주세요.");
+    }
+  } catch (err) { showResult(false, "요청 중 오류가 났어요. 다시 시도해 주세요."); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+});
+function showResult(ok, msg){ const r = $("#result"); r.className = "result " + (ok?"ok":"err"); r.textContent = msg; }
+
+/* 검수 대기 목록 */
+async function loadPending(){
+  const wrap = $("#pendWrap");
+  try {
+    const r = await fetch("/admin/api/pending");
+    if (r.status === 403) { wrap.innerHTML = '<p class="empty">권한이 없습니다.</p>'; return; }
+    const list = await r.json();
+    $("#pendCount").textContent = list.length;
+    if (!list.length) { wrap.innerHTML = '<p class="empty">검수 대기 중인 제보가 없어요.</p>'; return; }
+    wrap.innerHTML = "";
+    for (const p of list) {
+      const chips = (p.items||[]).map(n => `<span class="chip">${esc(n)}</span>`).join("");
+      const el = document.createElement("div"); el.className = "row";
+      el.innerHTML = `
+        <div class="h">
+          <div>
+            <div class="nm">${esc(p.brandName)} <span class="muted" style="font-weight:600">· 메뉴 ${p.itemCount}개</span></div>
+            <div class="meta">id: ${esc(p.brandId)} · 제보자: ${esc(p.reporter||"익명")} · ${esc(fmtDate(p.createdAt))}</div>
+          </div>
+          <div class="acts">
+            <button class="btn ok" data-approve="${p.id}">승인</button>
+            <button class="btn danger" data-reject="${p.id}">거절</button>
+          </div>
+        </div>
+        <div class="chips">${chips || '<span class="muted">메뉴 미리보기 없음</span>'}</div>`;
+      wrap.appendChild(el);
+    }
+    wrap.querySelectorAll("[data-approve]").forEach(b => b.onclick = () => approve(b.dataset.approve));
+    wrap.querySelectorAll("[data-reject]").forEach(b => b.onclick = () => reject(b.dataset.reject));
+  } catch (e) { wrap.innerHTML = '<p class="empty">목록을 불러오지 못했어요.</p>'; }
+}
+async function approve(id){
+  if (!confirm("이 제보를 승인해 정식 등록할까요?")) return;
+  const r = await fetch(`/admin/api/pending/${id}/approve`, { method:"POST" });
+  if (r.ok) { loadPending(); loadKiosks(); } else alert("승인하지 못했어요.");
+}
+async function reject(id){
+  if (!confirm("이 제보를 거절(삭제)할까요?")) return;
+  const r = await fetch(`/admin/api/pending/${id}`, { method:"DELETE" });
+  if (r.ok) loadPending(); else alert("거절하지 못했어요.");
+}
+
+/* 등록된 키오스크 — 카드형 목록 */
+async function loadKiosks(){
+  const wrap = $("#listWrap");
+  try {
+    const r = await fetch("/admin/api/kiosks");
+    if (r.status === 403) { wrap.innerHTML = '<p class="empty">권한이 없습니다.</p>'; return; }
+    const list = await r.json();
+    $("#count").textContent = list.length;
+    if (!list.length) { wrap.innerHTML = '<p class="empty">아직 등록된 키오스크가 없어요.</p>'; return; }
+    wrap.innerHTML = "";
+    for (const k of list) {
+      const el = document.createElement("div"); el.className = "row";
+      el.innerHTML = `
+        <div class="h">
+          <div>
+            <div class="nm">${esc(k.brandName)}${k.core?'<span class="badge">기본</span>':''}</div>
+            <div class="meta">${esc(k.brandId)} · 메뉴 ${k.itemCount}개 · ${esc(fmtDate(k.updatedAt))}</div>
+          </div>
+          <div class="acts"><button class="btn danger" data-id="${esc(k.brandId)}">삭제</button></div>
+        </div>`;
+      wrap.appendChild(el);
+    }
+    wrap.querySelectorAll("button.danger[data-id]").forEach(b => b.onclick = () => delKiosk(b.dataset.id));
+  } catch (e) { wrap.innerHTML = '<p class="empty">목록을 불러오지 못했어요.</p>'; }
+}
+async function delKiosk(brandId){
+  if (!confirm(`'${brandId}' 키오스크를 삭제할까요?`)) return;
+  const r = await fetch("/admin/api/kiosks/" + encodeURIComponent(brandId), { method:"DELETE" });
+  if (r.ok) loadKiosks(); else alert("삭제하지 못했어요.");
+}
+
+loadPending();
+loadKiosks();
+</script>
+</body>
+</html>
